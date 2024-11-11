@@ -1,0 +1,10 @@
+.vscode/*
+
+*.o
+*.bin
+*.out
+*.lock
+
+*.img
+
+bochsout.txt
