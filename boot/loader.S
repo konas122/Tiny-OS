@@ -156,7 +156,7 @@ loader_start:
     jmp dword SELECTOR_CODE:p_mode_start    ; 刷新 CPU 流水线, 避免受分支预测的影响
 
 .error_hlt:
-    hlt
+    hlt                 ; 停机指令 (特权指令)
 
 ; -------------------------------------
 loader_msg db '2 loader in real.'
