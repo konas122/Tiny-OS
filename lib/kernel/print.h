@@ -1,5 +1,5 @@
-#ifndef __LIB_KERNEL_PRINT_H
-#define __LIB_KERNEL_PRINT_H
+#ifndef __LIB_KERNEL_PRINT_H__
+#define __LIB_KERNEL_PRINT_H__
 
 #include "stdint.h"
 

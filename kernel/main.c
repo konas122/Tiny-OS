@@ -1,3 +1,4 @@
+#include "init.h"
 #include "print.h"
 
 int main(void) {
@@ -12,6 +13,10 @@ int main(void) {
     put_int(0x12345678);
     put_char('\n');
     put_int(0x00000000);
+    put_char('\n');
+
+    init_all();
+    asm volatile("sti");
 
     while (1);
 
