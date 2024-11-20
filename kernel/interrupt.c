@@ -15,18 +15,18 @@
 
 
 // 中断门描述符结构体
-struct gate_desc {
+typedef struct gate_desc {
     uint16_t func_offset_low_word;
     uint16_t selector;
     uint8_t dcount;
 
     uint8_t attribute;
     uint16_t func_offset_high_word;
-};
+} gate_desc;
 
 
-static void make_idt_desc(struct gate_desc* p_gdesc, uint8_t attr, intr_handler function);
-static struct gate_desc idt[IDT_DESC_CNT];              // idt 是中断描述符表, 本质上就是个中断门描述符数组
+static void make_idt_desc(gate_desc* p_gdesc, uint8_t attr, intr_handler function);
+static gate_desc idt[IDT_DESC_CNT];              // idt 是中断描述符表, 本质上就是个中断门描述符数组
 
 char* intr_name[IDT_DESC_CNT];          // 用于保存异常的名字
 intr_handler idt_table[IDT_DESC_CNT];   // 定义中断处理程序数组.
@@ -58,7 +58,7 @@ static void pic_init(void) {
 
 
 // 创建中断门描述符
-static void make_idt_desc(struct gate_desc *p_gdesc, uint8_t attr, intr_handler function) {
+static void make_idt_desc(gate_desc *p_gdesc, uint8_t attr, intr_handler function) {
     p_gdesc->func_offset_low_word = (uint32_t)function & 0x0000FFFF;
     p_gdesc->selector = SELECTOR_K_CODE;
     p_gdesc->dcount = 0;

@@ -9,13 +9,13 @@ LD = ld
 ASLIB = -I boot/include/
 ASFLAGS = -f elf32
 
-CLIB = -I lib/ -I lib/kernel/ -I kernel/include
+CLIB = -I lib/ -I lib/kernel/ -I kernel/include -I device/include
 CFLAGS = -Wall $(CLIB) -c -fno-builtin -W -Wstrict-prototypes -Wmissing-prototypes -m32 -g
 
 LDFLAGS = -Ttext $(ENTRY_POINT) -m elf_i386 -e main
 
-OBJS = $(BUILD_DIR)/main.o $(BUILD_DIR)/print.o $(BUILD_DIR)/interrupt.o $(BUILD_DIR)/init.o \
-		$(BUILD_DIR)/kernel.o
+OBJS =	$(BUILD_DIR)/main.o $(BUILD_DIR)/print.o $(BUILD_DIR)/interrupt.o $(BUILD_DIR)/init.o \
+		$(BUILD_DIR)/kernel.o $(BUILD_DIR)/timer.o
 
 
 # ================================================
@@ -26,6 +26,9 @@ $(BUILD_DIR)/interrupt.o: kernel/interrupt.c
 	$(CC) $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/init.o: kernel/init.c
+	$(CC) $(CFLAGS) $< -o $@
+
+$(BUILD_DIR)/timer.o: device/timer.c
 	$(CC) $(CFLAGS) $< -o $@
 
 # ================================================
