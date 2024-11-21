@@ -15,10 +15,12 @@ CFLAGS = -Wall $(CLIB) -c -fno-builtin -W -Wstrict-prototypes -Wmissing-prototyp
 LDFLAGS = -Ttext $(ENTRY_POINT) -m elf_i386 -e main
 
 OBJS =	$(BUILD_DIR)/main.o $(BUILD_DIR)/print.o $(BUILD_DIR)/interrupt.o $(BUILD_DIR)/init.o \
-		$(BUILD_DIR)/kernel.o $(BUILD_DIR)/timer.o
+		$(BUILD_DIR)/kernel.o $(BUILD_DIR)/timer.o $(BUILD_DIR)/debug.o $(BUILD_DIR)/string.o \
+		$(BUILD_DIR)/bitmap.o
 
 
 # ================================================
+# ===== Kernel =====
 $(BUILD_DIR)/main.o: kernel/main.c
 	$(CC) $(CFLAGS) $< -o $@
 
@@ -28,8 +30,27 @@ $(BUILD_DIR)/interrupt.o: kernel/interrupt.c
 $(BUILD_DIR)/init.o: kernel/init.c
 	$(CC) $(CFLAGS) $< -o $@
 
+$(BUILD_DIR)/debug.o: kernel/debug.c
+	$(CC) $(CFLAGS) $< -o $@
+
+# ===== Device =====
 $(BUILD_DIR)/timer.o: device/timer.c
 	$(CC) $(CFLAGS) $< -o $@
+
+# ====== Lib =======
+$(BUILD_DIR)/string.o: lib/string.c
+	$(CC) $(CFLAGS) $< -o $@
+
+$(BUILD_DIR)/bitmap.o: lib/kernel/bitmap.c
+	$(CC) $(CFLAGS) $< -o $@
+
+# ================================================
+$(BUILD_DIR)/kernel.o: kernel/kernel.S
+	$(AS) $(ASFLAGS) $< -o $@
+
+$(BUILD_DIR)/print.o: lib/kernel/print.S
+	$(AS) $(ASFLAGS) $< -o $@
+
 
 # ================================================
 $(BUILD_DIR)/mbr.bin: boot/mbr.S
@@ -38,17 +59,11 @@ $(BUILD_DIR)/mbr.bin: boot/mbr.S
 $(BUILD_DIR)/loader.bin: boot/loader.S
 	$(AS) $(ASLIB) $< -o $@
 
-$(BUILD_DIR)/print.o: lib/kernel/print.S
-	$(AS) $(ASFLAGS) $< -o $@
-
-$(BUILD_DIR)/kernel.o: kernel/kernel.S
-	$(AS) $(ASFLAGS) $< -o $@
-
-
-# ================================================
 $(BUILD_DIR)/kernel.bin: $(OBJS)
 	$(LD) $(LDFLAGS) $^ -o $@
 
+
+# ================================================
 
 .PHONY : mk_dir hd clean all
 

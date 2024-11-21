@@ -1,8 +1,10 @@
 #include "init.h"
 #include "print.h"
+#include "debug.h"
+
 
 int main(void) {
-    put_str("I am Kernel\n");
+    put_str("\nI am Kernel\n");
 
     put_int(0);
     put_char('\n');
