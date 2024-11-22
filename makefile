@@ -10,7 +10,8 @@ ASLIB = -I boot/include/
 ASFLAGS = -f elf32
 
 CLIB = -I lib/ -I lib/kernel/ -I kernel/include -I device/include
-CFLAGS = -Wall $(CLIB) -c -fno-builtin -W -Wstrict-prototypes -Wmissing-prototypes -m32 -g
+CFLAGS = -Wall -fno-builtin -Wstrict-prototypes -Wmissing-prototypes -fno-stack-protector \
+		 $(CLIB) -c -W -m32 -g
 
 LDFLAGS = -Ttext $(ENTRY_POINT) -m elf_i386 -e main
 
