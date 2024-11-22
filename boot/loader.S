@@ -206,7 +206,7 @@ enter_kernel:
     mov byte [gs:160], 'V'
 
     mov esp, 0xc009f000
-    jmp KERNEL_ENTRY_POINT                  ; 用地址 0x1500 访问测试, 结果ok
+    jmp KERNEL_ENTRY_POINT
 
 
 ; -------------------------------------
@@ -277,9 +277,9 @@ setup_page:
 ; Create Page Directory Entry
 .create_pde:
     mov eax, PAGE_DIR_TABLE_POS
-    add eax, 0x1000
-    mov ebx, eax
-    or eax, PG_US_U | PG_RW_W | PG_P        ; 页目录项的属性 RW=1, P=1 和 US=1, 表示用户属性, 所有特权级别都可以访问
+    add eax, 0x1000                     ; eax 为第一个 PTE 的位置
+    mov ebx, eax                        ; 备份 eax
+    or eax, PG_US_U | PG_RW_W | PG_P    ; 页目录项的属性 RW=1, P=1 和 US=1, 表示用户属性, 所有特权级别都可以访问
 
     ; 保证了分页前段机制下的 "线性地址" 和分页后 "虚拟地址" 对应的 "物理地址" 一致 (低端的 1MB)
     mov [PAGE_DIR_TABLE_POS + 0x0], eax
@@ -302,10 +302,10 @@ setup_page:
 
 ; 创建内核其它页表的 PDE
     mov eax, PAGE_DIR_TABLE_POS
-    add eax, 0x2000
+    add eax, 0x2000 ; eax 为第二个 PTE 的位置
     or eax, PG_US_U | PG_RW_W | PG_P
     mov ebx, PAGE_DIR_TABLE_POS
-    mov ecx, 254    ; 范围为 769-1022 的所有目录项数量
+    mov ecx, 254    ; 范围为 769-1022 的所有目录项数量 (0xc00/4=768)
     mov esi, 769
 .create_kernel_pde:
     mov [ebx + esi * 4], eax

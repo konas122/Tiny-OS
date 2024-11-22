@@ -115,6 +115,8 @@ static void exception_init(void) {
     intr_name[17] = "#AC Alignment Check Exception";
     intr_name[18] = "#MC Machine-Check Exception";
     intr_name[19] = "#XF SIMD Floating-Point Exception";
+
+    put_str("    exception_init done\n");
 }
 
 
@@ -163,7 +165,7 @@ enum intr_status intr_get_status() {
 
 
 void idt_init() {
-    put_str("idt_init start\n");
+    put_str("\nidt_init start\n");
     idt_desc_init();    // 初始化中断描述符表
     exception_init();
     pic_init();         // 初始化 8259A

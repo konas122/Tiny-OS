@@ -3,6 +3,13 @@
 
 #include "stdint.h"
 
+
+// ---------------------------------------
+#define likely(x)   __builtin_expect(!!(x), 1)
+#define unlikely(x) __builtin_expect(!!(x), 0)
+
+
+// ---------------------------------------
 #define	 RPL0  0
 #define	 RPL1  1
 #define	 RPL2  2
@@ -30,5 +37,6 @@
 #define bool int
 #define true 1
 #define false 0
+
 
 #endif

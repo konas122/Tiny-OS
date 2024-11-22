@@ -16,7 +16,7 @@ LDFLAGS = -Ttext $(ENTRY_POINT) -m elf_i386 -e main
 
 OBJS =	$(BUILD_DIR)/main.o $(BUILD_DIR)/print.o $(BUILD_DIR)/interrupt.o $(BUILD_DIR)/init.o \
 		$(BUILD_DIR)/kernel.o $(BUILD_DIR)/timer.o $(BUILD_DIR)/debug.o $(BUILD_DIR)/string.o \
-		$(BUILD_DIR)/bitmap.o
+		$(BUILD_DIR)/bitmap.o $(BUILD_DIR)/memory.o
 
 
 # ================================================
@@ -31,6 +31,9 @@ $(BUILD_DIR)/init.o: kernel/init.c
 	$(CC) $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/debug.o: kernel/debug.c
+	$(CC) $(CFLAGS) $< -o $@
+
+$(BUILD_DIR)/memory.o: kernel/memory.c
 	$(CC) $(CFLAGS) $< -o $@
 
 # ===== Device =====
