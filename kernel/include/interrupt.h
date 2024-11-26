@@ -6,6 +6,7 @@
 typedef void* intr_handler;
 
 void idt_init(void);
+void register_handler(uint8_t vector_no, intr_handler function);
 
 
 /* 定义中断的两种状态:

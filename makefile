@@ -17,7 +17,8 @@ LDFLAGS = -Ttext $(ENTRY_POINT) -m elf_i386 -e main
 
 OBJS =	$(BUILD_DIR)/main.o $(BUILD_DIR)/print.o $(BUILD_DIR)/interrupt.o $(BUILD_DIR)/init.o \
 		$(BUILD_DIR)/kernel.o $(BUILD_DIR)/timer.o $(BUILD_DIR)/debug.o $(BUILD_DIR)/string.o \
-		$(BUILD_DIR)/bitmap.o $(BUILD_DIR)/memory.o $(BUILD_DIR)/thread.o $(BUILD_DIR)/list.o
+		$(BUILD_DIR)/bitmap.o $(BUILD_DIR)/memory.o $(BUILD_DIR)/thread.o $(BUILD_DIR)/list.o \
+		$(BUILD_DIR)/switch.o
 
 
 # ================================================
@@ -61,6 +62,9 @@ $(BUILD_DIR)/kernel.o: kernel/kernel.S
 	$(AS) $(ASFLAGS) $< -o $@
 
 $(BUILD_DIR)/print.o: lib/kernel/print.S
+	$(AS) $(ASFLAGS) $< -o $@
+
+$(BUILD_DIR)/switch.o: thread/switch.S
 	$(AS) $(ASFLAGS) $< -o $@
 
 

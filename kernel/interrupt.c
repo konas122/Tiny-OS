@@ -83,9 +83,27 @@ static void general_intr_handler(uint8_t vec_nr) {
     if (vec_nr == 0x27 || vec_nr == 0x2f) { // 0x2f 是从片 8259A 上的最后一个 irq 引脚, 保留项
         return;                             // IRQ7 和 IRQ15 会产生伪中断 (spurious interrupt), 无须处理
     }
-    put_str("int vector: 0x");
-    put_int(vec_nr);
-    put_char('\n');
+    set_cursor(0);
+    int cursor_pos = 0;
+    while(cursor_pos < 320) {
+        put_char(' ');
+        cursor_pos++;
+    }
+    set_cursor(0);
+    put_str("\n!!!!!!!      excetion message begin  !!!!!!!!\n");
+    set_cursor(88);         // 从第 2 行第 8 个字符开始打印
+    put_str(intr_name[vec_nr]);
+    if (vec_nr == 14) {     // 若为 Pagefault
+        int page_fault_vaddr = 0; 
+        asm ("movl %%cr2, %0" : "=r" (page_fault_vaddr));   // cr2 是存放造成 page_fault 的地址
+        put_str("\npage fault addr is 0x");
+        put_int(page_fault_vaddr);
+    }
+    put_str("\n!!!!!!!      excetion message end    !!!!!!!!\n");
+
+    // 能进入中断处理程序就表示已经处在关中断情况下,
+    // 不会出现调度进程的情况, 故下面的死循环不会再被中断。
+    while(1);
 }
 
 
@@ -153,6 +171,11 @@ enum intr_status intr_disable() {
 // 将中断状态设置为 status
 enum intr_status intr_set_status(enum intr_status status) {
     return status & INTR_ON ? intr_enable() : intr_disable();
+}
+
+
+void register_handler(uint8_t vector_no, intr_handler function) {
+    idt_table[vector_no] = function; 
 }
 
 

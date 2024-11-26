@@ -2,7 +2,7 @@
 #include "interrupt.h"
 
 
-void list_init (struct list* list) {
+void list_init(list* list) {
     list->head.prev = NULL;
     list->head.next = &list->tail;
     list->tail.prev = &list->head;
@@ -10,7 +10,7 @@ void list_init (struct list* list) {
 }
 
 
-void list_insert_before(struct list_elem* before, struct list_elem* elem) { 
+void list_insert_before(list_elem* before, list_elem* elem) { 
    enum intr_status old_status = intr_disable();
 
    before->prev->next = elem; 
@@ -79,7 +79,7 @@ list_elem* list_traversal(list* plist, function func, int arg) {
 }
 
 
-uint32_t list_len(struct list* plist) {
+uint32_t list_len(list* plist) {
     list_elem* elem = plist->head.next;
     uint32_t length = 0;
     while (elem != &plist->tail) {
@@ -90,6 +90,6 @@ uint32_t list_len(struct list* plist) {
 }
 
 
-bool list_empty(struct list* plist) {
+bool list_empty(list* plist) {
     return (plist->head.next == &plist->tail ? true : false);
 }

@@ -21,7 +21,7 @@ typedef struct list {
 } list;
 
 
-typedef bool (function)(struct list_elem*, int arg);
+typedef bool (function)(list_elem*, int arg);
 
 void list_init(list *);
 void list_insert_before(list_elem *before, list_elem *elem);

@@ -1,6 +1,7 @@
 #ifndef __THREAD_THREAD_H__
 #define __THREAD_THREAD_H__
 
+#include "list.h"
 #include "stdint.h"
 
 
@@ -64,8 +65,16 @@ typedef struct thread_stack {
 typedef struct task_struct {
     uint32_t *self_kstack;  // 各内核线程都用自己的内核栈
     enum task_status status;
-    uint8_t priority;
     char name[16];
+
+    uint8_t priority;
+    uint8_t ticks;
+    uint32_t elapsed_ticks;
+
+    list_elem general_tag;
+    list_elem all_list_tag;
+    uint32_t *pgdir;        // 进程自己页表的虚拟地址
+
     uint32_t stack_magic;   // 用这串数字做栈的边界标记,用于检测栈的溢出
 } task_struct;
 
@@ -73,6 +82,10 @@ typedef struct task_struct {
 void thread_create(task_struct *pthread, thread_func function, void *func_arg);
 void init_thread(task_struct *pthread, char *name, int prio);
 task_struct *thread_start(char *name, int prio, thread_func function, void *func_arg);
+
+task_struct *running_thread(void);
+void schedule(void);
+void thread_init(void);
 
 
 #endif
