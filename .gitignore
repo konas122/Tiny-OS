@@ -4,6 +4,7 @@ draft/*
 *.o
 *.bin
 *.out
+*.map
 *.lock
 
 *.img
