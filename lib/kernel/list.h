@@ -16,8 +16,8 @@ typedef struct list_elem {
 
 
 typedef struct list {
-   struct list_elem head;
-   struct list_elem tail;
+   list_elem head;
+   list_elem tail;
 } list;
 
 

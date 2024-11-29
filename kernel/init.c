@@ -1,4 +1,4 @@
-#include "init.h"
+#include "tss.h"
 #include "print.h"
 #include "timer.h"
 #include "memory.h"
@@ -6,6 +6,8 @@
 #include "console.h"
 #include "keyboard.h"
 #include "interrupt.h"
+
+#include "init.h"
 
 
 void init_all() {
@@ -16,4 +18,5 @@ void init_all() {
     timer_init();   // 初始化 PIT
     console_init();
     keyboard_init();
+    tss_init();
 }

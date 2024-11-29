@@ -25,7 +25,7 @@ task_struct* running_thread() {
     uint32_t esp; 
     asm ("mov %%esp, %0" : "=g" (esp));
     // 取 esp 整数部分即 pcb 起始地址
-    return (struct task_struct*)(esp & 0xfffff000);
+    return (task_struct*)(esp & 0xfffff000);
 }
 
 

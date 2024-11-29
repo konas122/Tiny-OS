@@ -6,9 +6,6 @@
 #include "console.h"
 #include "interrupt.h"
 
-#include "ioqueue.h"
-#include "keyboard.h"
-
 
 void k_thread_a(void *);
 void k_thread_b(void *);
@@ -33,25 +30,13 @@ int main(void) {
 
 void k_thread_a(void* arg) {
     while(1) {
-        enum intr_status old_status = intr_disable();
-        if (!ioq_empty(&kbd_buf)) {
-            console_put_str(arg);
-            char byte = ioq_getchar(&kbd_buf);
-            console_put_char(byte);
-        }
-        intr_set_status(old_status);
+        console_put_str(arg);
     }
 }
 
 
 void k_thread_b(void* arg) {
     while(1) {
-        enum intr_status old_status = intr_disable();
-        if (!ioq_empty(&kbd_buf)) {
-            console_put_str(arg);
-            char byte = ioq_getchar(&kbd_buf);
-            console_put_char(byte);
-        }
-        intr_set_status(old_status);
+        console_put_str(arg);
     }
 }
