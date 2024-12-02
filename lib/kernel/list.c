@@ -11,7 +11,7 @@ void list_init(list* list) {
 
 
 void list_insert_before(list_elem* before, list_elem* elem) { 
-   enum intr_status old_status = intr_disable();
+   intr_status old_status = intr_disable();
 
    before->prev->next = elem; 
 
@@ -35,7 +35,7 @@ void list_append(list* plist, list_elem* elem) {
 
 /* 使元素pelem脱离链表 */
 void list_remove(list_elem* pelem) {
-    enum intr_status old_status = intr_disable();
+    intr_status old_status = intr_disable();
 
     pelem->prev->next = pelem->next;
     pelem->next->prev = pelem->prev;

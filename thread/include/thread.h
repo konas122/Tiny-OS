@@ -3,19 +3,21 @@
 
 #include "list.h"
 #include "stdint.h"
+#include "bitmap.h"
+#include "memory.h"
 
 
 typedef void thread_func(void *);
 
 
-enum task_status {
+typedef enum task_status {
     TASK_RUNNING,
     TASK_READY,
     TASK_BLOCKED,
     TASK_WAITING,
     TASK_HANGING,
     TASK_DIED
-};
+} task_status;
 
 
 typedef struct intr_stack {
@@ -64,7 +66,7 @@ typedef struct thread_stack {
 
 typedef struct task_struct {
     uint32_t *self_kstack;  // 各内核线程都用自己的内核栈
-    enum task_status status;
+    task_status status;
     char name[16];
 
     uint8_t priority;
@@ -73,10 +75,16 @@ typedef struct task_struct {
 
     list_elem general_tag;
     list_elem all_list_tag;
-    uint32_t *pgdir;        // 进程自己页表的虚拟地址
+
+    uint32_t *pgdir;                // 进程自己页表的虚拟地址
+    virtual_addr userprog_vaddr;    // 用户进程的虚拟地址
 
     uint32_t stack_magic;   // 用这串数字做栈的边界标记,用于检测栈的溢出
 } task_struct;
+
+
+extern list thread_all_list;
+extern list thread_ready_list;
 
 
 void thread_create(task_struct *pthread, thread_func function, void *func_arg);
@@ -87,7 +95,7 @@ task_struct *running_thread(void);
 void schedule(void);
 void thread_init(void);
 
-void thread_block(enum task_status stat);
+void thread_block(task_status stat);
 void thread_unblock(task_struct *pthread);
 
 

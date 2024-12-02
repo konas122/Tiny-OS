@@ -20,7 +20,7 @@ void lock_init(lock *plock) {
 
 
 void sem_wait(semaphore *psema) {
-    enum intr_status old_status = intr_disable();
+    intr_status old_status = intr_disable();
     while (psema->value == 0) {
         task_struct *cur = running_thread();
         ASSERT(!elem_find(&psema->waiters, &cur->general_tag));
@@ -34,7 +34,7 @@ void sem_wait(semaphore *psema) {
 
 
 void sem_post(semaphore *psema) {
-    enum intr_status old_status = intr_disable();
+    intr_status old_status = intr_disable();
     ASSERT(psema->value == 0);
     if (!list_empty(&psema->waiters)) {
         task_struct *thread_blocked = elem2entry(task_struct, general_tag, list_pop(&psema->waiters));

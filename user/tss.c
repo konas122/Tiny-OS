@@ -41,7 +41,7 @@ static TSS tss;
 
 // 更新 tss 中 esp0 字段的值为 pthread 的 0 级线
 void update_tss_esp(task_struct* pthread) {
-    tss.esp0 = (uint32_t*)((uint32_t)pthread + PG_SIZE);
+    tss.esp0 = (uint32_t *)((uint32_t)pthread + PG_SIZE);
 }
 
 
@@ -61,7 +61,7 @@ static gdt_desc make_gdt_desc(uint32_t* desc_addr, uint32_t limit, uint8_t attr_
 
 // 在 gdt 中创建 tss 并重新加载 gdt
 void tss_init() {
-    put_str("tss_init start\n");
+    put_str("\ntss_init start\n");
     uint32_t tss_size = sizeof(tss);
     memset(&tss, 0, tss_size);
     tss.ss0 = SELECTOR_K_STACK;

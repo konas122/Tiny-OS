@@ -138,8 +138,8 @@ static void exception_init(void) {
 
 
 // 开中断并返回开中断前的状态
-enum intr_status intr_enable() {
-    enum intr_status old_status;
+intr_status intr_enable() {
+    intr_status old_status;
     if (intr_get_status() == INTR_ON) {
         old_status = INTR_ON;
         return old_status;
@@ -153,8 +153,8 @@ enum intr_status intr_enable() {
 
 
 // 关中断, 并且返回关中断前的状态
-enum intr_status intr_disable() {     
-    enum intr_status old_status;
+intr_status intr_disable() {     
+    intr_status old_status;
     if (INTR_ON == intr_get_status()) {
         old_status = INTR_ON;
         asm volatile("cli" : : : "memory"); // 关中断, cli 指令将 IF 位置 0
@@ -168,7 +168,7 @@ enum intr_status intr_disable() {
 
 
 // 将中断状态设置为 status
-enum intr_status intr_set_status(enum intr_status status) {
+intr_status intr_set_status(intr_status status) {
     return status & INTR_ON ? intr_enable() : intr_disable();
 }
 
@@ -179,7 +179,7 @@ void register_handler(uint8_t vector_no, intr_handler function) {
 
 
 // 获取当前中断状态
-enum intr_status intr_get_status() {
+intr_status intr_get_status() {
     uint32_t eflags = 0;
     GET_EFLAGS(eflags);
     return (eflags & EFLAGS_IF) ? INTR_ON : INTR_OFF;

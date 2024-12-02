@@ -4,6 +4,7 @@
 #include "global.h"
 #include "memory.h"
 #include "string.h"
+#include "process.h"
 #include "interrupt.h"
 
 #include "thread.h"
@@ -12,10 +13,10 @@
 #define PG_SIZE 4096
 
 
-task_struct *main_thread;    // 主线程PCB
+task_struct *main_thread;   // 主线程PCB
 list thread_ready_list;	    // 就绪队列
 list thread_all_list;	    // 所有任务队列
-static list_elem *thread_tag;       // 用于保存队列中的线程结点
+static list_elem *thread_tag;   // 用于保存队列中的线程结点
 
 
 extern void switch_to(task_struct *cur, task_struct *next);
@@ -49,7 +50,7 @@ void thread_create(task_struct* pthread, thread_func function, void* func_arg) {
 }
 
 
-void init_thread(task_struct* pthread, char* name, int prio) {
+void init_thread(task_struct *pthread, char *name, int prio) {
     memset(pthread, 0, sizeof(*pthread));
     strcpy(pthread->name, name);
     pthread->status = TASK_RUNNING; 
@@ -119,12 +120,14 @@ void schedule() {
     thread_tag = list_pop(&thread_ready_list);
     task_struct *next = elem2entry(task_struct, general_tag, thread_tag);
     next->status = TASK_RUNNING;
+
+    process_activate(next);
     switch_to(cur, next);
 }
 
 
 void thread_init(void) {
-    put_str("thread_init start\n");
+    put_str("\nthread_init start\n");
     list_init(&thread_ready_list);
     list_init(&thread_all_list);
 
@@ -133,9 +136,9 @@ void thread_init(void) {
 }
 
 
-void thread_block(enum task_status stat) {
+void thread_block(task_status stat) {
     ASSERT((stat == TASK_BLOCKED) || (stat == TASK_WAITING) || (stat == TASK_HANGING));
-    enum intr_status old_stat = intr_disable();
+    intr_status old_stat = intr_disable();
     task_struct *cur_thread = running_thread();
     cur_thread->status = stat;
     schedule();
@@ -144,7 +147,7 @@ void thread_block(enum task_status stat) {
 
 
 void thread_unblock(task_struct *pthread) {
-    enum intr_status old_stat = intr_disable();
+    intr_status old_stat = intr_disable();
     ASSERT((pthread->status == TASK_BLOCKED) || (pthread->status == TASK_WAITING) || (pthread->status == TASK_HANGING));
     if (pthread->status != TASK_READY) {
         ASSERT(!elem_find(&thread_ready_list, &pthread->general_tag));

@@ -12,10 +12,10 @@
 #define PG_US_U 4   // U/S 属性位值, 用户级
 
 
-enum pool_flags {
+typedef enum pool_flags {
    PF_KERNEL = 1,   // 内核内存池
    PF_USER = 2      // 用户内存池
-};
+} pool_flags;
 
 
 typedef struct virtual_addr {
@@ -25,8 +25,15 @@ typedef struct virtual_addr {
 
 
 void mem_init(void);
+
 void *get_kernel_pages(uint32_t pg_cnt);
-void *malloc_page(enum pool_flags pf, uint32_t pg_cnt);
+void *get_user_pages(uint32_t pg_cnt);
+// 将地址 vaddr 与 pf 池中的物理地址关联, 仅支持一页空间分配
+void *get_a_page(pool_flags pf, uint32_t vaddr);
+
+uint32_t addr_v2p(uint32_t vaddr);
+
+void *malloc_page(pool_flags pf, uint32_t pg_cnt);
 uint32_t *pte_vaddr(uint32_t vaddr);
 uint32_t *pde_vaddr(uint32_t vaddr);
 
