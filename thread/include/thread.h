@@ -7,6 +7,7 @@
 #include "memory.h"
 
 
+typedef int16_t pid_t;
 typedef void thread_func(void *);
 
 
@@ -66,6 +67,7 @@ typedef struct thread_stack {
 
 typedef struct task_struct {
     uint32_t *self_kstack;  // 各内核线程都用自己的内核栈
+    pid_t pid;
     task_status status;
     char name[16];
 

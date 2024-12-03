@@ -1,3 +1,4 @@
+#include "sync.h"
 #include "debug.h"
 #include "print.h"
 #include "stdint.h"
@@ -13,6 +14,7 @@
 #define PG_SIZE 4096
 
 
+lock pid_lock;
 task_struct *main_thread;   // 主线程PCB
 list thread_ready_list;	    // 就绪队列
 list thread_all_list;	    // 所有任务队列
@@ -27,6 +29,15 @@ task_struct* running_thread() {
     asm ("mov %%esp, %0" : "=g" (esp));
     // 取 esp 整数部分即 pcb 起始地址
     return (task_struct*)(esp & 0xfffff000);
+}
+
+
+static pid_t allocate_pid(void) {
+    static pid_t next_pid = -1;
+    lock_acquire(&pid_lock);
+    next_pid++;
+    lock_release(&pid_lock);
+    return next_pid;
 }
 
 
@@ -53,6 +64,7 @@ void thread_create(task_struct* pthread, thread_func function, void* func_arg) {
 void init_thread(task_struct *pthread, char *name, int prio) {
     memset(pthread, 0, sizeof(*pthread));
     strcpy(pthread->name, name);
+    pthread->pid = allocate_pid();
     pthread->status = TASK_RUNNING; 
     pthread->priority = prio;
 
@@ -130,6 +142,7 @@ void thread_init(void) {
     put_str("\nthread_init start\n");
     list_init(&thread_ready_list);
     list_init(&thread_all_list);
+    lock_init(&pid_lock);
 
     make_main_thread();
     put_str("thread_init done\n");

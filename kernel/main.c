@@ -7,12 +7,15 @@
 #include "process.h"
 #include "interrupt.h"
 
+#include "stdio.h"
+#include "syscall.h"
+#include "syscall_init.h"
+
 
 void k_thread_a(void *);
 void k_thread_b(void *);
 void u_prog_a(void);
 void u_prog_b(void);
-int test_var_a = 0, test_var_b = 0;
 
 
 int main(void) {
@@ -20,6 +23,10 @@ int main(void) {
 
     init_all();
     intr_enable();
+
+    console_put_str("main_pid: 0x");
+    console_put_int(sys_getpid());
+    console_put_str("\n");
 
     thread_start("k_thread_a", 31, k_thread_a, "A_ ");
     thread_start("k_thread_b", 31, k_thread_b, "B_ ");
@@ -36,34 +43,35 @@ int main(void) {
 
 
 void k_thread_a(void* arg) {
-    while(1) {
-        console_put_str(arg);
-        console_put_str(": 0x");
-        console_put_int(test_var_a);
-        console_put_str("\n");
-    }
+    console_put_str(arg);
+    console_put_str(": 0x");
+    console_put_int(sys_getpid());
+    console_put_str("\n");
+
+    while (1);
 }
 
-
 void k_thread_b(void* arg) {
-    while(1) {
-        console_put_str(arg);
-        console_put_str(": 0x");
-        console_put_int(test_var_b);
-        console_put_str("\n");
-    }
+    console_put_str(arg);
+    console_put_str(": 0x");
+    console_put_int(sys_getpid());
+    console_put_str("\n");
+
+    while (1);
 }
 
 
 void u_prog_a(void) {
-    while(1) {
-        test_var_a++;
-    }
+    getpid();
+    // printf("a");
+    printf("prog_a_pid: 0x%x\n", getpid());
+
+    while (1);
 }
 
 
 void u_prog_b(void) {
-    while(1) {
-        test_var_b++;
-    }
+    // printf("prog_b_pid: 0x%x\n", getpid());
+
+    while (1);
 }

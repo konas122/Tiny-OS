@@ -6,6 +6,7 @@
 #include "console.h"
 #include "keyboard.h"
 #include "interrupt.h"
+#include "syscall_init.h"
 
 #include "init.h"
 
@@ -19,4 +20,5 @@ void init_all() {
     console_init();
     keyboard_init();
     tss_init();
+    syscall_init();
 }

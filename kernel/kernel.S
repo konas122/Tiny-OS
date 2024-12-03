@@ -102,3 +102,34 @@ VECTOR 0x2c, ZERO   ; ps/2 鼠标
 VECTOR 0x2d, ZERO   ; fpu 浮点单元异常
 VECTOR 0x2e, ZERO   ; 硬盘
 VECTOR 0x2f, ZERO   ; 保留
+
+
+; ====================== INT 0x80 ======================
+[bits 32]
+extern syscall_table
+section .text
+
+global syscall_handler
+
+syscall_handler:
+    push 0      ; 压入 0, 使栈中格式统一
+    push ds
+    push es
+    push fs
+    push gs
+    pushad      ; 依次压入 EAX,ECX,EDX,EBX,ESP,EBP,ESI,EDI 
+
+    push 0x80   ; 此位置压入 0x80 也是为了保持统一的栈格式
+
+    ; 为系统调用子功能传入参数
+    push edi
+    push esi
+    push edx
+    push ecx
+    push ebx
+
+    call [syscall_table + eax * 4]
+    add esp, 20
+
+    mov [esp + 8 * 4], eax
+    jmp intr_exit

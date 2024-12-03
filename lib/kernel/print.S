@@ -167,8 +167,8 @@ put_char:
 .roll_screen:
     cld             ; 清除方向位, 也就是把 eflags 寄存器中的 DF 设为 0
     mov ecx, 960    ; 一共有 2000-80=1920 个字符要搬运, 共 1920*2=3840 字节. 一次搬 4 字节, 共 3840/4=960 次
-    mov esi, 0xb80a0    ; 第 1 行行首
-    mov edi, 0xb8000    ; 第 0 行行首
+    mov esi, 0xc00b80a0 ; 第 1 行行首
+    mov edi, 0xc00b8000 ; 第 0 行行首
     rep movsd
 
     ; 将最后一行填充为空白
@@ -202,6 +202,8 @@ put_char:
     popad
     ret
 
+
+; -------------------------------------
 set_cursor:
    pushad
     mov bx, [esp+36]
