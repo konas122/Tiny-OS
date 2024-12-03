@@ -71,7 +71,7 @@ void u_prog_a(void) {
 
 
 void u_prog_b(void) {
-    // printf("prog_b_pid: 0x%x\n", getpid());
+    printf("prog_b_pid: 0x%x\n", getpid());
 
     while (1);
 }
