@@ -1,10 +1,12 @@
 #include "sync.h"
+#include "list.h"
 #include "print.h"
 #include "debug.h"
 #include "global.h"
 #include "stdint.h"
 #include "thread.h"
 #include "string.h"
+#include "interrupt.h"
 
 #include "memory.h"
 
@@ -31,8 +33,18 @@ typedef struct pool {
     uint32_t pool_size;
 } pool;
 
+
+// 内存仓库 arena 元信息
+typedef struct arena {
+    mem_block_desc* desc;
+    uint32_t cnt;
+    bool large;
+} arena;
+
+
 pool kernel_pool, user_pool;    // 生成内核内存池和用户内存池
 virtual_addr kernel_vaddr;      // 此结构是用来给内核分配虚拟地址
+mem_block_desc k_block_descs[DESC_CNT]; // 内核内存块描述符数组
 
 
 static void *vaddr_get(pool_flags pf, uint32_t pg_cnt) {
@@ -120,7 +132,7 @@ static void page_table_map(void *_vaddr, void *_page_phyaddr) {
         uint32_t pde_phyaddr = (uint32_t)palloc(&kernel_pool);
         *pde = (pde_phyaddr | PG_US_U | PG_RW_W | PG_P_1);
         // 分配到的物理页地址 pde_phyaddr 对应的物理内存清 0
-        memset((void *)((int)pte & 0xfffff000), 0, PG_SIZE);
+        memset((void *)((uint32_t)pte & 0xfffff000), 0, PG_SIZE);
 
         ASSERT(!(*pte & 0x00000001));
         *pte = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1);     // US=1, RW=1, P=1
@@ -215,6 +227,227 @@ uint32_t addr_v2p(uint32_t vaddr) {
 }
 
 
+// 返回 arena 中第 idx 个内存块的地址
+static mem_block* arena2block(arena *a, uint32_t idx) {
+    return (mem_block*)((uint32_t)a + sizeof(arena) + idx * a->desc->block_size);
+}
+
+
+static arena* block2arena(mem_block* b) {
+    return (arena *)((uint32_t)b & 0xfffff000);
+}
+
+
+void *sys_malloc(uint32_t size) {
+    pool_flags pf;
+    pool *mem_pool;
+    uint32_t pool_size;
+    mem_block_desc *desc;
+    task_struct *cur = running_thread();
+
+    if (cur->pgdir == NULL) {
+        pf = PF_KERNEL;
+        pool_size = kernel_pool.pool_size;
+        mem_pool = &kernel_pool;
+        desc = k_block_descs;
+    }
+    else {
+        pf = PF_USER;
+        pool_size = user_pool.pool_size;
+        mem_pool = &user_pool;
+        desc = cur->u_block_desc;
+    }
+
+    if (!(size > 0 && size < pool_size)) {
+        return NULL;
+    }
+    arena *a;
+    mem_block *b;
+    lock_acquire(&mem_pool->lock);
+
+    if (size > 1024) {
+        uint32_t page_cnt = DIV_ROUND_UP(size + sizeof(arena), PG_SIZE);
+        a = (arena *)malloc_page(pf, page_cnt);
+
+        if (a != NULL) {
+            memset(a, 0, page_cnt * PG_SIZE);
+            a->desc = NULL;
+            a->cnt = page_cnt;
+            a->large = true;
+            lock_release(&mem_pool->lock);
+            return (void *)(a + 1);
+        }
+        else {
+            lock_release(&mem_pool->lock);
+            return NULL;
+        }
+    }
+    else {
+        uint8_t desc_idx;
+        for (desc_idx = 0; desc_idx < DESC_CNT; desc_idx++) {
+            if (size <= desc[desc_idx].block_size) {
+                break;
+            }
+        }
+
+        if (list_empty(&desc[desc_idx].free_list)) {
+            a = (arena *)malloc_page(pf, 1);
+            if (a == NULL) {
+                lock_release(&mem_pool->lock);
+                return NULL;
+            }
+            memset(a, 0, PG_SIZE);
+
+            a->desc = &desc[desc_idx];
+            a->large = false;
+            a->cnt = desc[desc_idx].blocks_per_arena;
+
+            intr_status old_status = intr_disable();
+
+            // 开始将 arena 拆分成内存块, 并添加到内存块描述符的 free_list 中
+            for (uint32_t block_idx = 0; block_idx < desc[desc_idx].blocks_per_arena; block_idx++) {
+                b = arena2block(a, block_idx);
+                ASSERT(!elem_find(&a->desc->free_list, &b->free_elem));
+                list_append(&a->desc->free_list, &b->free_elem);
+            }
+            intr_set_status(old_status);
+        }
+
+        b = elem2entry(mem_block, free_elem, list_pop(&(desc[desc_idx].free_list)));
+        memset(b, 0, desc[desc_idx].block_size);
+        a = block2arena(b);
+        a->cnt--;
+        lock_release(&mem_pool->lock);
+        return (void *)b;
+    }
+    return NULL;
+}
+
+
+void pfree(uint32_t pg_phy_addr) {
+    pool *mem_pool;
+    uint32_t bit_idx = 0;
+
+    if (pg_phy_addr >= user_pool.phy_addr_start) {
+        mem_pool = &user_pool;
+        bit_idx = (pg_phy_addr - user_pool.phy_addr_start) / PG_SIZE;
+    }
+    else {
+        mem_pool = &kernel_pool;
+        bit_idx = (pg_phy_addr - kernel_pool.phy_addr_start) / PG_SIZE;
+    }
+    bitmap_set(&mem_pool->pool_bitmap, bit_idx, 0);
+}
+
+
+static void page_table_unmap(uint32_t vaddr) {
+    uint32_t *pte = pte_vaddr(vaddr);
+    *pte &= ~PG_P_1;
+    asm volatile ("invlpg %0"::"m" (vaddr):"memory");   // 更新 tlb
+}
+
+
+static void vaddr_remove(pool_flags pf, void *_vaddr, uint32_t pg_cnt) {
+    uint32_t bit_idx_start = 0, vaddr = (uint32_t)_vaddr, cnt = 0;
+    if (pf == PF_KERNEL) {
+        bit_idx_start = (vaddr - kernel_vaddr.vaddr_start) / PG_SIZE;
+        while (cnt < pg_cnt) {
+            bitmap_set(&kernel_vaddr.vaddr_bitmap, bit_idx_start + cnt++, 0);
+        }
+    }
+    else {
+        task_struct *cur = running_thread();
+        bit_idx_start = (vaddr - cur->userprog_vaddr.vaddr_start) / PG_SIZE;
+        while (cnt < pg_cnt) {
+            bitmap_set(&cur->userprog_vaddr.vaddr_bitmap, bit_idx_start + cnt++, 0);
+        }
+    }
+}
+
+
+void mfree_page(pool_flags pf, void* _vaddr, uint32_t pg_cnt) {
+    uint32_t pg_phy_addr;
+    uint32_t vaddr = (uint32_t)_vaddr, page_cnt = 0;
+    pg_phy_addr = addr_v2p(vaddr);
+
+    ASSERT(pg_cnt >= 1 && vaddr % PG_SIZE == 0);
+    // 确保待释放的物理内存在低端 1M+1k 大小的页目录 +1k 大小的页表地址范围外
+    ASSERT((pg_phy_addr % PG_SIZE) == 0 && pg_phy_addr >= 0x102000);
+
+    if (pg_phy_addr >= user_pool.phy_addr_start) {
+        vaddr -= PG_SIZE;
+        while (page_cnt < pg_cnt) {
+            vaddr += PG_SIZE;
+            pg_phy_addr = addr_v2p(vaddr);
+
+            ASSERT((pg_phy_addr % PG_SIZE) == 0 && pg_phy_addr >= user_pool.phy_addr_start);
+
+            pfree(pg_phy_addr);
+            page_table_unmap(vaddr);
+            page_cnt++;
+        }
+        vaddr_remove(pf, _vaddr, pg_cnt);
+    }
+    else {
+        vaddr -= PG_SIZE;	      
+        while (page_cnt < pg_cnt) {
+            vaddr += PG_SIZE;
+            pg_phy_addr = addr_v2p(vaddr);
+
+            ASSERT((pg_phy_addr % PG_SIZE) == 0 && \
+                pg_phy_addr >= kernel_pool.phy_addr_start && \
+                pg_phy_addr < user_pool.phy_addr_start
+            );
+
+            pfree(pg_phy_addr);
+            page_table_unmap(vaddr);
+            page_cnt++;
+        }
+        vaddr_remove(pf, _vaddr, pg_cnt);
+    }
+}
+
+
+void sys_free(void *ptr) {
+    if (ptr == NULL) {
+        return;
+    }
+    pool_flags PF;
+    pool *mem_pool;
+
+    task_struct *cur = running_thread();
+    if (cur->pgdir == NULL) {
+        PF = PF_KERNEL;
+        mem_pool = &kernel_pool;
+        ASSERT((uint32_t)ptr > K_HEAP_START);
+    }
+    else {
+        PF = PF_USER;
+        mem_pool = &user_pool;
+    }
+    lock_acquire(&mem_pool->lock);
+    mem_block *b = ptr;
+    arena *a = block2arena(b);
+    ASSERT(a->large == 0 || a->large == 1);
+    if (a->desc == NULL && a->large == true) {
+        mfree_page(PF, a, a->cnt);
+    }
+    else {
+        list_append(&a->desc->free_list, &b->free_elem);
+        if (++a->cnt == a->desc->blocks_per_arena) {
+            uint32_t block_idx;
+            for (block_idx = 0; block_idx < a->desc->blocks_per_arena; block_idx++) {
+                mem_block*  b = arena2block(a, block_idx);
+                ASSERT(elem_find(&a->desc->free_list, &b->free_elem));
+                list_remove(&b->free_elem);
+            }
+            mfree_page(PF, a, 1); 
+        } 
+    }
+    lock_release(&mem_pool->lock);
+}
+
+
 static void mem_pool_init(uint32_t all_mem) {
     put_str("    mem_pool_init start\n");
     uint32_t page_table_size = PG_SIZE * 256;   // 页表大小 = 第 0 和第 768 个页目录项指向同一个页表 +
@@ -282,9 +515,26 @@ static void mem_pool_init(uint32_t all_mem) {
 }
 
 
+// 为 malloc 做准备
+void block_desc_init(mem_block_desc* desc_array) {
+    uint16_t desc_idx, block_size = 16;
+
+    for (desc_idx = 0; desc_idx < DESC_CNT; desc_idx++) {
+        desc_array[desc_idx].block_size = block_size;
+
+        // 初始化 arena 中的内存块数量
+        desc_array[desc_idx].blocks_per_arena = (PG_SIZE - sizeof(arena)) / block_size;
+        list_init(&desc_array[desc_idx].free_list);
+
+        block_size *= 2;  // 更新为下一个规格内存块
+    }
+}
+
+
 void mem_init() {
     put_str("\nmem_init start\n");
     uint32_t mem_bytes_total = (*(uint32_t*)(0xb00));
     mem_pool_init(mem_bytes_total);     // 初始化内存池
+    block_desc_init(k_block_descs);
     put_str("mem_init done\n");
 }

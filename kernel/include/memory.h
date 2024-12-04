@@ -1,6 +1,7 @@
 #ifndef __KERNEL_MEMORY_H__
 #define __KERNEL_MEMORY_H__
 
+#include "list.h"
 #include "stdint.h"
 #include "bitmap.h"
 
@@ -10,6 +11,8 @@
 #define PG_RW_W 2   // R/W 属性位值, 读/写/执行
 #define PG_US_S 0   // U/S 属性位值, 系统级
 #define PG_US_U 4   // U/S 属性位值, 用户级
+
+#define DESC_CNT 7  // 内存描述符个数
 
 
 typedef enum pool_flags {
@@ -24,7 +27,26 @@ typedef struct virtual_addr {
 } virtual_addr;
 
 
+typedef struct mem_block {
+    list_elem free_elem;
+} mem_block;
+
+
+typedef struct mem_block_desc {
+    uint32_t block_size;
+    uint32_t blocks_per_arena;
+    list free_list;
+} mem_block_desc;
+
+
 void mem_init(void);
+
+void *sys_malloc(uint32_t size);
+void mfree_page(pool_flags pf, void *_vaddr, uint32_t pg_cnt);
+void pfree(uint32_t pg_phy_addr);
+void sys_free(void *ptr);
+
+void block_desc_init(mem_block_desc *desc_array);
 
 void *get_kernel_pages(uint32_t pg_cnt);
 void *get_user_pages(uint32_t pg_cnt);

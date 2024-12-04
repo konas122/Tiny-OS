@@ -30,6 +30,8 @@ void syscall_init(void) {
 
     syscall_table[SYS_GETPID] = (void *)sys_getpid;
     syscall_table[SYS_WRITE] = (void *)sys_write;
+    syscall_table[SYS_MALLOC] = (void *)sys_malloc;
+    syscall_table[SYS_FREE] = (void *)sys_free;
 
     put_str("syscall_init done\n");
 }

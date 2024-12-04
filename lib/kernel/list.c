@@ -33,7 +33,7 @@ void list_append(list* plist, list_elem* elem) {
     list_insert_before(&plist->tail, elem);
 }
 
-/* 使元素pelem脱离链表 */
+
 void list_remove(list_elem* pelem) {
     intr_status old_status = intr_disable();
 
