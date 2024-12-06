@@ -21,7 +21,7 @@ OBJS =	$(BUILD_DIR)/main.o $(BUILD_DIR)/print.o $(BUILD_DIR)/interrupt.o $(BUILD
 		$(BUILD_DIR)/bitmap.o $(BUILD_DIR)/memory.o $(BUILD_DIR)/thread.o $(BUILD_DIR)/list.o \
 		$(BUILD_DIR)/switch.o $(BUILD_DIR)/sync.o $(BUILD_DIR)/console.o $(BUILD_DIR)/keyboard.o \
 		$(BUILD_DIR)/ioqueue.o $(BUILD_DIR)/tss.o $(BUILD_DIR)/process.o $(BUILD_DIR)/syscall.o \
-		$(BUILD_DIR)/syscall_init.o $(BUILD_DIR)/stdio.o
+		$(BUILD_DIR)/syscall_init.o $(BUILD_DIR)/stdio.o $(BUILD_DIR)/stdio_kernel.o $(BUILD_DIR)/ide.o \
 
 
 # ================================================
@@ -54,6 +54,9 @@ $(BUILD_DIR)/keyboard.o: device/keyboard.c
 $(BUILD_DIR)/ioqueue.o: device/ioqueue.c
 	$(CC) $(CFLAGS) $< -o $@
 
+$(BUILD_DIR)/ide.o: device/ide.c
+	$(CC) $(CFLAGS) $< -o $@
+
 
 # ====== Lib =======
 $(BUILD_DIR)/string.o: lib/string.c
@@ -66,6 +69,9 @@ $(BUILD_DIR)/bitmap.o: lib/kernel/bitmap.c
 	$(CC) $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/list.o: lib/kernel/list.c
+	$(CC) $(CFLAGS) $< -o $@
+
+$(BUILD_DIR)/stdio_kernel.o: lib/kernel/stdio_kernel.c
 	$(CC) $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/syscall.o: lib/user/syscall.c

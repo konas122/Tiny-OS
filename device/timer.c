@@ -16,7 +16,9 @@
 #define READ_WRITE_LATCH    3
 #define PIT_CONTROL_PORT    0x43
 
-uint32_t ticks;     // ticks 是内核自中断开启以来总共的 ticks 数
+#define mil_seconds_per_intr (1000 / IRQ0_FREQUENCY)
+
+uint32_t ticks;     // ticks 是内核自中断开启以来总共的 ticks
 
 
 static void intr_timer_handler(void) {
@@ -49,6 +51,21 @@ static void frequency_set(
     outb(counter_port, (uint8_t)counter_value);
     // 再写入 counter_value 的高 8 位
     outb(counter_port, (uint8_t)counter_value >> 8);
+}
+
+
+static void ticks_to_sleep(uint32_t sleep_ticks) {
+    uint32_t start_tick = ticks;
+    while (ticks - start_tick < sleep_ticks) {
+        thread_yield();
+    }
+}
+
+
+void mtime_sleep(uint32_t m_seconds) {
+    uint32_t sleep_ticks = DIV_ROUND_UP(m_seconds, mil_seconds_per_intr);
+    ASSERT(sleep_ticks > 0);
+    ticks_to_sleep(sleep_ticks); 
 }
 
 

@@ -100,6 +100,7 @@ void thread_init(void);
 
 void thread_block(task_status stat);
 void thread_unblock(task_struct *pthread);
+void thread_yield(void);
 
 
 #endif

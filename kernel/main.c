@@ -22,7 +22,6 @@ int main(void) {
     put_str("\nI am Kernel\n");
 
     init_all();
-    intr_enable();
 
     console_put_str("main_pid: 0x");
     console_put_int(sys_getpid());
