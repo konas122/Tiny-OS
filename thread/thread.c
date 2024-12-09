@@ -95,6 +95,13 @@ void init_thread(task_struct *pthread, char *name, int prio) {
     pthread->elapsed_ticks = 0;
     pthread->pgdir = NULL;
 
+    pthread->fd_table[0] = 0;
+    pthread->fd_table[1] = 1;
+    pthread->fd_table[2] = 2;
+    for (int i = 3; i < MAX_FILES_OPEN_PER_PROC; ++i) {
+        pthread->fd_table[i] = -1;
+    }
+
     pthread->stack_magic = 0x19780506;
 }
 

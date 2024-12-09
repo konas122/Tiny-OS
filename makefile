@@ -28,100 +28,128 @@ OBJS =	$(BUILD_DIR)/main.o $(BUILD_DIR)/print.o $(BUILD_DIR)/interrupt.o $(BUILD
 # ================================================
 # ===== Kernel =====
 $(BUILD_DIR)/main.o: kernel/main.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 $(BUILD_DIR)/interrupt.o: kernel/interrupt.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 $(BUILD_DIR)/init.o: kernel/init.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 $(BUILD_DIR)/debug.o: kernel/debug.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 $(BUILD_DIR)/memory.o: kernel/memory.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 # ===== Device =====
 $(BUILD_DIR)/timer.o: device/timer.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 $(BUILD_DIR)/console.o: device/console.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 $(BUILD_DIR)/keyboard.o: device/keyboard.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 $(BUILD_DIR)/ioqueue.o: device/ioqueue.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 $(BUILD_DIR)/ide.o: device/ide.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 
 # ===== Fs =====
 $(BUILD_DIR)/fs.o: fs/fs.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 
 # ====== Lib =======
 $(BUILD_DIR)/string.o: lib/string.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 $(BUILD_DIR)/stdio.o: lib/stdio.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 $(BUILD_DIR)/bitmap.o: lib/kernel/bitmap.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 $(BUILD_DIR)/list.o: lib/kernel/list.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 $(BUILD_DIR)/stdio_kernel.o: lib/kernel/stdio_kernel.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 $(BUILD_DIR)/syscall.o: lib/user/syscall.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 
 # ===== Thread =====
 $(BUILD_DIR)/thread.o: thread/thread.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 $(BUILD_DIR)/sync.o: thread/sync.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 # ====== User ======
 $(BUILD_DIR)/tss.o: user/tss.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 $(BUILD_DIR)/process.o: user/process.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 $(BUILD_DIR)/syscall_init.o: user/syscall_init.c
-	$(CC) $(CFLAGS) $< -o $@
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "\tCC CFLAGS" $@
 
 
 # ================================================
 $(BUILD_DIR)/kernel.o: kernel/kernel.S
-	$(AS) $(ASFLAGS) $< -o $@
+	@$(AS) $(ASFLAGS) $< -o $@
+	@echo "\tAS ASFLAGS" $@
 
 $(BUILD_DIR)/print.o: lib/kernel/print.S
-	$(AS) $(ASFLAGS) $< -o $@
+	@$(AS) $(ASFLAGS) $< -o $@
+	@echo "\tAS ASFLAGS" $@
 
 $(BUILD_DIR)/switch.o: thread/switch.S
-	$(AS) $(ASFLAGS) $< -o $@
+	@$(AS) $(ASFLAGS) $< -o $@
+	@echo "\tAS ASFLAGS" $@
 
 
 # ================================================
 $(BUILD_DIR)/mbr.bin: boot/mbr.S
-	$(AS) $(ASLIB) $< -o $@
+	@$(AS) $(ASLIB) $< -o $@
+	@echo "\tAS ASFLAGS" $@
 
 $(BUILD_DIR)/loader.bin: boot/loader.S
-	$(AS) $(ASLIB) $< -o $@
+	@$(AS) $(ASLIB) $< -o $@
+	@echo "\tAS ASFLAGS" $@
 
 $(BUILD_DIR)/kernel.bin: $(OBJS)
-	$(LD) $(LDFLAGS) $^ -o $@
+	@$(LD) $(LDFLAGS) $^ -o $@
+	@echo "\tLD LDFLAGS" $@
 
 
 # ================================================

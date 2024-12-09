@@ -6,6 +6,7 @@
 #include "bitmap.h"
 #include "memory.h"
 
+#define MAX_FILES_OPEN_PER_PROC 8
 
 typedef int16_t pid_t;
 typedef void thread_func(void *);
@@ -75,6 +76,8 @@ typedef struct task_struct {
     uint8_t ticks;
     uint32_t elapsed_ticks;
 
+    int8_t fd_table[MAX_FILES_OPEN_PER_PROC];
+
     list_elem general_tag;
     list_elem all_list_tag;
 
@@ -82,7 +85,7 @@ typedef struct task_struct {
     virtual_addr userprog_vaddr;    // 用户进程的虚拟地址
     mem_block_desc u_block_desc[DESC_CNT];
 
-    uint32_t stack_magic;   // 用这串数字做栈的边界标记,用于检测栈的溢出
+    uint32_t stack_magic;   // 用这串数字做栈的边界标记, 用于检测栈的溢出
 } task_struct;
 
 
