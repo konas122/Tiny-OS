@@ -157,13 +157,13 @@ rollback:
     switch (rollback_step) {
     case 3:
         memset(&file_table[fd_idx], 0, sizeof(file));
-        [[fallthrough]];
+        __attribute__((fallthrough));
     case 2:
         sys_free(new_file_inode);
-        [[fallthrough]];
+        __attribute__((fallthrough));
     case 1:
         bitmap_set(&cur_part->inode_bitmap, inode_no, 0);
-        [[fallthrough]];
+        __attribute__((fallthrough));
     default:
         break;
     }
