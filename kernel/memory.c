@@ -117,7 +117,7 @@ static void page_table_map(void *_vaddr, void *_page_phyaddr) {
      * 因此在 *pde 为 0 时, *pte 只能出现在下面 else 语句块中的 *pde 后面。
      * *********************************************************/
 
-    // 判断 pde 的 P 位，若为 1, 则表示该表已存在
+    // 判断 pde 的 P 位, 若为 1, 则表示该表已存在
     if (*pde & 0x00000001) {
         if (likely( !(*pte & 0x00000001) )) {
             *pte = (page_phyaddr | PG_US_U | PG_RW_W | PG_P_1); // US=1, RW=1, P=1
@@ -313,7 +313,7 @@ void *sys_malloc(uint32_t size) {
             intr_set_status(old_status);
         }
 
-        b = elem2entry(mem_block, free_elem, list_pop(&(desc[desc_idx].free_list)));
+        b = (mem_block *)elem2entry(mem_block, free_elem, list_pop(&(desc[desc_idx].free_list)));
         memset(b, 0, desc[desc_idx].block_size);
         a = block2arena(b);
         a->cnt--;
@@ -475,7 +475,7 @@ static void mem_pool_init(uint32_t all_mem) {
     user_pool.pool_bitmap.btmp_bytes_len = ubm_length;
 
     /*********    内核内存池和用户内存池位图   ***********
-     *   位图是全局的数据，长度不固定.
+     *   位图是全局的数据, 长度不固定.
      *   全局或静态的数组需要在编译时知道其长度,
      *   而我们需要根据总内存大小算出需要多少字节.
      *   所以改为指定一块内存来生成位图.

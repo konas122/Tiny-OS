@@ -100,7 +100,7 @@ void init_thread(task_struct *pthread, char *name, int prio) {
 
 
 task_struct* thread_start(char* name, int prio, thread_func function, void* func_arg) {
-    task_struct* thread = get_kernel_pages(1);
+    task_struct* thread = (task_struct *)get_kernel_pages(1);
 
     init_thread(thread, name, prio);
     thread_create(thread, function, func_arg);
@@ -145,7 +145,7 @@ void schedule() {
     thread_tag = NULL;      // thread_tag 清空
     // 将 thread_ready_list 队列中的第一个就绪线程弹出, 准备将其调度上 cpu.
     thread_tag = list_pop(&thread_ready_list);
-    task_struct *next = elem2entry(task_struct, general_tag, thread_tag);
+    task_struct *next = (task_struct *)elem2entry(task_struct, general_tag, thread_tag);
     next->status = TASK_RUNNING;
 
     process_activate(next);
@@ -190,7 +190,7 @@ void thread_unblock(task_struct *pthread) {
 
 void thread_yield(void) {
     task_struct *cur = running_thread();
-    enum intr_status old_status = intr_disable();
+    intr_status old_status = intr_disable();
     ASSERT(!elem_find(&thread_ready_list, &cur->general_tag));
     list_append(&thread_ready_list, &cur->general_tag);
     cur->status = TASK_READY;

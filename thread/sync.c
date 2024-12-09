@@ -37,7 +37,7 @@ void sem_post(semaphore *psema) {
     intr_status old_status = intr_disable();
     ASSERT(psema->value == 0);
     if (!list_empty(&psema->waiters)) {
-        task_struct *thread_blocked = elem2entry(task_struct, general_tag, list_pop(&psema->waiters));
+        task_struct *thread_blocked = (task_struct *)elem2entry(task_struct, general_tag, list_pop(&psema->waiters));
         thread_unblock(thread_blocked);
     }
     psema->value++;

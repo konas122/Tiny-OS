@@ -64,12 +64,17 @@ struct partition_table_entry {
     uint32_t sec_cnt;       // 本分区的扇区数目
 } __attribute__ ((packed)); // 保证此结构是 16 字节大小
 
+
 // 引导扇区, mbr 或 ebr 所在的扇区
 struct boot_sector {
     uint8_t other[446];     // 引导代码
     struct partition_table_entry partition_table[4];  // 分区表中有 4 项
     uint16_t signature;     // 启动扇区的结束标志是 0x55 0xaa
 } __attribute__ ((packed));
+
+
+typedef struct boot_sector boot_sector;
+typedef struct partition_table_entry partition_table_entry;
 
 
 static void select_disk(disk *hd) {
@@ -272,7 +277,10 @@ static void identify_disk(disk* hd) {
     read_from_sector(hd, id_info, 1);
 
     char buf[64];
-    uint8_t sn_start = 10 * 2, sn_len = 20, md_start = 27 * 2, md_len = 40;
+    uint8_t sn_start = 10 * 2,
+            sn_len = 20,
+            md_start = 27 * 2,
+            md_len = 40;
     swap_pairs_bytes(&id_info[sn_start], buf, sn_len);
     printk("    disk %s info:\n        SN: %s\n", hd->name, buf);
     memset(buf, 0, sizeof(buf));
@@ -286,16 +294,16 @@ static void identify_disk(disk* hd) {
 
 // 扫描硬盘 hd 中地址为 ext_lba 的扇区中的所有分区
 static void partition_scan(disk* hd, uint32_t ext_lba) {
-    struct boot_sector *bs = (struct boot_sector *)sys_malloc(sizeof(struct boot_sector));
+    boot_sector *bs = (boot_sector *)sys_malloc(sizeof(boot_sector));
     ide_read(hd, ext_lba, bs, 1);
     uint8_t part_idx = 0;
-    struct partition_table_entry *p = bs->partition_table;
+    partition_table_entry *p = bs->partition_table;
 
     // 遍历分区表 4 个分区表项
     while (part_idx++ < 4) {
         if (p->fs_type == 0x5) {    // 若为扩展分区
             if (ext_lba_base != 0) {
-                /* 子扩展分区的start_lba是相对于主引导扇区中的总扩展分区地址 */
+                // 子扩展分区的 start_lba 是相对于主引导扇区中的总扩展分区地址
                 partition_scan(hd, p->start_lba + ext_lba_base);
             }
             else {
@@ -309,7 +317,7 @@ static void partition_scan(disk* hd, uint32_t ext_lba) {
         }
         else if (p->fs_type != 0) { // 若是有效的分区类型
             if (ext_lba == 0) {	    // 此时全是主分区
-                hd->prim_parts[p_no].start_lba = ext_lba + p->start_lba;
+                hd->prim_parts[p_no].start_lba = p->start_lba;
                 hd->prim_parts[p_no].sec_cnt = p->sec_cnt;
                 hd->prim_parts[p_no].my_disk = hd;
                 list_append(&partition_list, &hd->prim_parts[p_no].part_tag);
@@ -322,9 +330,9 @@ static void partition_scan(disk* hd, uint32_t ext_lba) {
                 hd->logic_parts[l_no].sec_cnt = p->sec_cnt;
                 hd->logic_parts[l_no].my_disk = hd;
                 list_append(&partition_list, &hd->logic_parts[l_no].part_tag);
-                sprintf(hd->logic_parts[l_no].name, "%s%d", hd->name, l_no + 5);    // 逻辑分区数字是从 5 开始, 主分区是1-4.
+                sprintf(hd->logic_parts[l_no].name, "%s%d", hd->name, l_no + 5);    // 逻辑分区数字是从 5 开始, 主分区是 1-4.
                 l_no++;
-                if (l_no >= 8) {    // 只支持8个逻辑分区, 避免数组越界
+                if (l_no >= 8) {    // 最多支持 8 个逻辑分区
                     return;
                 }
             }

@@ -75,11 +75,10 @@ static void make_idt_desc(gate_desc *p_gdesc, uint8_t attr, intr_handler functio
 
 // 初始化中断描述符表
 static void idt_desc_init(void) {
-    int lastIndex = IDT_DESC_CNT - 1;
     for (int i = 0; i < IDT_DESC_CNT; i++) {
         make_idt_desc(&idt[i], IDT_DESC_ATTR_DPL0, intr_entry_table[i]);
     }
-    make_idt_desc(&idt[lastIndex], IDT_DESC_ATTR_DPL3, syscall_handler);
+    make_idt_desc(&idt[0x80], IDT_DESC_ATTR_DPL3, syscall_handler); // Syscall: INT 0x80
     put_str("    idt_desc_init done\n");
 }
 

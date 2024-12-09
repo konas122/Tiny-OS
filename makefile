@@ -10,7 +10,7 @@ ASLIB = -I boot/include/
 ASFLAGS = -f elf32
 
 CLIB = -I lib/ -I lib/kernel/ -I lib/user/ -I kernel/include -I device/include \
-       -I thread/include -I user/include
+       -I thread/include -I user/include -I fs/include
 CFLAGS = -Wall -fno-builtin -Wstrict-prototypes -Wmissing-prototypes -fno-stack-protector \
 		 $(CLIB) -c -W -m32 -g
 
@@ -22,6 +22,7 @@ OBJS =	$(BUILD_DIR)/main.o $(BUILD_DIR)/print.o $(BUILD_DIR)/interrupt.o $(BUILD
 		$(BUILD_DIR)/switch.o $(BUILD_DIR)/sync.o $(BUILD_DIR)/console.o $(BUILD_DIR)/keyboard.o \
 		$(BUILD_DIR)/ioqueue.o $(BUILD_DIR)/tss.o $(BUILD_DIR)/process.o $(BUILD_DIR)/syscall.o \
 		$(BUILD_DIR)/syscall_init.o $(BUILD_DIR)/stdio.o $(BUILD_DIR)/stdio_kernel.o $(BUILD_DIR)/ide.o \
+		$(BUILD_DIR)/fs.o
 
 
 # ================================================
@@ -55,6 +56,11 @@ $(BUILD_DIR)/ioqueue.o: device/ioqueue.c
 	$(CC) $(CFLAGS) $< -o $@
 
 $(BUILD_DIR)/ide.o: device/ide.c
+	$(CC) $(CFLAGS) $< -o $@
+
+
+# ===== Fs =====
+$(BUILD_DIR)/fs.o: fs/fs.c
 	$(CC) $(CFLAGS) $< -o $@
 
 
