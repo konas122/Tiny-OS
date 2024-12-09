@@ -313,7 +313,7 @@ void *sys_malloc(uint32_t size) {
             intr_set_status(old_status);
         }
 
-        b = (mem_block *)elem2entry(mem_block, free_elem, list_pop(&(desc[desc_idx].free_list)));
+        b = elem2entry(mem_block, free_elem, list_pop(&(desc[desc_idx].free_list)));
         memset(b, 0, desc[desc_idx].block_size);
         a = block2arena(b);
         a->cnt--;

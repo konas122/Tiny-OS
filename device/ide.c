@@ -1,5 +1,4 @@
 #include "io.h"
-#include "sync.h"
 #include "stdio.h"
 #include "debug.h"
 #include "timer.h"
@@ -179,7 +178,7 @@ void ide_read(disk* hd, uint32_t lba, void* buf, uint32_t sec_cnt) {
     /* 2 写入待读入的扇区数和起始扇区号 */
         select_sector(hd, lba + secs_done, secs_op);
 
-    /* 3 执行的命令写入reg_cmd寄存器 */
+    /* 3 执行的命令写入 reg_cmd 寄存器 */
         cmd_out(hd->my_channel, CMD_READ_SECTOR);
 
     /*********************   阻塞自己的时机  ***********************
@@ -345,7 +344,7 @@ static void partition_scan(disk* hd, uint32_t ext_lba) {
 
 // 打印分区信息
 static bool partition_info(list_elem* pelem, int arg UNUSED) {
-    partition* part = (partition *)elem2entry(partition, part_tag, pelem);
+    partition* part = elem2entry(partition, part_tag, pelem);
     printk("    %s start_lba: 0x%x, sec_cnt: 0x%x\n",part->name, part->start_lba, part->sec_cnt);
     /**
      * 在此处return false与函数本身功能无关,

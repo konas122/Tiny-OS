@@ -1,6 +1,7 @@
 #ifndef __FS_INODE_H__
 #define __FS_INODE_H__
 
+#include "ide.h"
 #include "list.h"
 #include "stdint.h"
 
@@ -19,7 +20,13 @@ typedef struct inode {
 
     // i_sectors[0-11] 是直接块, i_sectors[12] 用来存储一级间接块指针
     uint32_t i_sectors[13];
-    struct list_elem inode_tag;
+    list_elem inode_tag;
 } inode;
+
+
+inode* inode_open(partition* part, uint32_t inode_no);
+void inode_sync(partition* part, inode* inode, void* io_buf);
+void inode_init(uint32_t inode_no, inode* new_inode);
+void inode_close(inode* inode);
 
 #endif

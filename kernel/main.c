@@ -1,3 +1,4 @@
+#include "fs.h"
 #include "init.h"
 #include "print.h"
 #include "debug.h"
@@ -32,6 +33,8 @@ int main(void) {
 
     process_execute(u_prog_a, "user_prog_a");
     process_execute(u_prog_b, "user_prog_b");
+
+    sys_open("/file1", O_CREAT);
 
     while(1) {
         // console_put_str("Main ");

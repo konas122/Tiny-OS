@@ -4,7 +4,6 @@
 #include "sync.h"
 #include "stdint.h"
 #include "bitmap.h"
-#include "super_block.h"
 
 
 // 分区结构
@@ -14,7 +13,7 @@ typedef struct partition {
     struct disk* my_disk;   // 分区所属的硬盘
     list_elem part_tag;     // 用于队列中的标记
     char name[8];           // 分区名称
-    super_block* sb;        // 本分区的超级块
+    struct super_block* sb; // 本分区的超级块
     bitmap block_bitmap;    // 块位图
     bitmap inode_bitmap;    // inode 位图
     list open_inodes;       // 本分区打开的 inode 队列

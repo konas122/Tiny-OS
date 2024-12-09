@@ -152,7 +152,7 @@ void schedule() {
     thread_tag = NULL;      // thread_tag 清空
     // 将 thread_ready_list 队列中的第一个就绪线程弹出, 准备将其调度上 cpu.
     thread_tag = list_pop(&thread_ready_list);
-    task_struct *next = (task_struct *)elem2entry(task_struct, general_tag, thread_tag);
+    task_struct *next = elem2entry(task_struct, general_tag, thread_tag);
     next->status = TASK_RUNNING;
 
     process_activate(next);
