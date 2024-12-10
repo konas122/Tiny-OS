@@ -2,6 +2,7 @@
 #include "init.h"
 #include "print.h"
 #include "debug.h"
+#include "string.h"
 #include "memory.h"
 #include "thread.h"
 #include "console.h"
@@ -34,7 +35,20 @@ int main(void) {
     process_execute(u_prog_a, "user_prog_a");
     process_execute(u_prog_b, "user_prog_b");
 
-    sys_open("/file1", O_CREAT);
+   uint32_t fd = sys_open("/file1", O_RDWR);
+   printf("open /file1, fd:%d\n", fd);
+   char buf[64] = {0};
+    sys_write(fd, "hello,world\n", 12);
+    sys_close(fd);
+
+   printf("________  close file1 and reopen  ________\n");
+   fd = sys_open("/file1", O_RDWR);
+   memset(buf, 0, 64);
+   int read_bytes = sys_read(fd, buf, 24);
+   printf("4_ read %d bytes:\n%s", read_bytes, buf);
+
+    sys_close(fd);
+    printf("%d closed now\n", fd);
 
     while(1) {
         // console_put_str("Main ");

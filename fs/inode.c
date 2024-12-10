@@ -66,6 +66,7 @@ void inode_sync(partition *part, inode *inode, void *io_buf) {
     }
 }
 
+
 inode *inode_open(partition *part, uint32_t inode_no) {
     inode *inode_found;
     list_elem *elem = part->open_inodes.head.next;
@@ -110,6 +111,7 @@ inode *inode_open(partition *part, uint32_t inode_no) {
     sys_free(inode_buf);
     return inode_found;
 }
+
 
 void inode_close(inode *inode) {
     intr_status old_status = intr_disable();

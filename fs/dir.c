@@ -74,7 +74,7 @@ bool search_dir_entry(partition *part, dir *pdir, const char *name, dir_entry *d
             p_de++;
         }
         block_idx++;
-        p_de = (dir_entry*)buf;
+        p_de = (dir_entry*)buf; // Next we will read a new sector
         memset(buf, 0, SECTOR_SIZE);
     }
     sys_free(buf);

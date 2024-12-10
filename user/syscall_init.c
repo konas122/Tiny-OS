@@ -1,3 +1,4 @@
+#include "fs.h"
 #include "print.h"
 #include "stdint.h"
 #include "string.h"
@@ -16,12 +17,6 @@ syscall syscall_table[syscall_nr];
 
 uint32_t sys_getpid(void) {
     return running_thread()->pid;
-}
-
-
-uint32_t sys_write(char *str) {
-    console_put_str(str);
-    return strlen(str);
 }
 
 

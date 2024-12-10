@@ -5,9 +5,9 @@
 #include "inode.h"
 #include "debug.h"
 #include "global.h"
-#include "stdint.h"
 #include "string.h"
 #include "memory.h"
+#include "console.h"
 #include "super_block.h"
 #include "stdio_kernel.h"
 
@@ -252,7 +252,6 @@ static int search_file(const char* pathname, struct path_search_record* searched
         strcat(searched_record->searched_path, "/");
         strcat(searched_record->searched_path, name);
 
-        // 在所给的目录中查找文件
         if (search_dir_entry(cur_part, parent_dir, name, &dir_e)) {
             memset(name, 0, MAX_FILE_NAME_LEN);
             // 若 sub_path != NULL, 也就是未结束时继续拆分路径
@@ -272,7 +271,7 @@ static int search_file(const char* pathname, struct path_search_record* searched
                 return dir_e.i_no;
             }
         }
-        else {  //若找不到
+        else {
             /**
              * 找不到目录项时, 要留着 parent_dir 不要关闭,
              * 若是创建新文件的话需要在 parent_dir 中创建
@@ -327,7 +326,7 @@ int32_t sys_open(const char* pathname, uint8_t flags) {
 
     // 若是在最后一个路径上没找到, 并且并不是要创建文件, 直接返回 -1
     if (!found && !(flags & O_CREAT)) {
-        printk("in path %s, file %s is`t exist\n",
+        printk("in path %s, file %s is't exist\n",
                searched_record.searched_path,
                (strrchr(searched_record.searched_path, '/') + 1));
         dir_close(searched_record.parent_dir);
@@ -345,14 +344,72 @@ int32_t sys_open(const char* pathname, uint8_t flags) {
         printk("creating file\n");
         fd = file_create(searched_record.parent_dir, (strrchr(pathname, '/') + 1), flags);
         dir_close(searched_record.parent_dir);
-        // 其余为打开文件
-    }
+        break;
 
+    default:    // O_RDONLY, O_WRONLY, O_RDWR
+        fd = file_open(inode_no, flags);
+    }
     /**
      *  此 fd 是 pcb->fd_table 数组中的元素下标,
      *  并不是指全局 file_table 中的下标
      */
     return fd;
+}
+
+
+// 将文件描述符转化为文件表的下标
+static uint32_t fd_local2global(uint32_t local_fd) {
+    task_struct *cur = running_thread();
+    int32_t global_fd = cur->fd_table[local_fd];
+    ASSERT(global_fd >= 0 && global_fd < MAX_FILE_OPEN);
+    return (uint32_t)global_fd;
+}
+
+
+int32_t sys_close(int32_t fd) {
+    int32_t ret = -1;
+    if (fd > 2) {
+        uint32_t _fd = fd_local2global(fd);
+        ret = file_close(&file_table[_fd]);
+        task_struct *cur = running_thread();
+        cur->fd_table[fd] = -1;
+    }
+    return ret;
+}
+
+
+int32_t sys_write(int32_t fd, const void* buf, uint32_t count) {
+    if (fd < 0) {
+        printk("sys_write: fd error\n");
+        return -1;
+    }
+    if (fd == stdout_no) {
+        char tmp_buf[1024] = {0};
+        memcpy(tmp_buf, buf, count);
+        console_put_str(tmp_buf);
+        return count;
+    }
+    uint32_t _fd = fd_local2global(fd);
+    file* wr_file = &file_table[_fd];
+    if (wr_file->fd_flag & O_WRONLY || wr_file->fd_flag & O_RDWR) {
+        uint32_t bytes_written  = file_write(wr_file, buf, count);
+        return bytes_written;
+    }
+    else {
+        console_put_str("sys_write: not allowed to write file without flag O_RDWR or O_WRONLY\n");
+        return -1;
+    }
+}
+
+
+int32_t sys_read(int32_t fd, void* buf, uint32_t count) {
+    if (fd < 0) {
+        printk("sys_read: fd error\n");
+        return -1;
+    }
+    ASSERT(buf != NULL);
+    uint32_t _fd = fd_local2global(fd);
+    return file_read(&file_table[_fd], buf, count);   
 }
 
 
