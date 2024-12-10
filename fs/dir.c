@@ -83,12 +83,12 @@ bool search_dir_entry(partition *part, dir *pdir, const char *name, dir_entry *d
 }
 
 
-void dir_close(dir* dir) {
-    if (dir == &root_dir) {
+void dir_close(dir* dir_ptr) {
+    if (dir_ptr == &root_dir) {
         return;
     }
-    inode_close(dir->inode);
-    sys_free(dir);
+    inode_close(dir_ptr->inode);
+    sys_free(dir_ptr);
 }
 
 

@@ -60,7 +60,7 @@ static bool mount_partition(list_elem *pelem, int arg) {
 }
 
 // 格式化分区, 也就是初始化分区的元信息, 创建文件系统
-static void partition_format(disk *hd, partition *part) {
+static void partition_format(partition *part) {
     uint32_t boot_sector_sects = 1;
     uint32_t super_block_sects = 1;
     uint32_t inode_bitmap_sects = DIV_ROUND_UP(MAX_FILES_PER_PART, BITS_PER_SECTOR);
@@ -98,6 +98,7 @@ static void partition_format(disk *hd, partition *part) {
     printk("%s info:\n", part->name);
     printk("    magic: 0x%x\n    part_lba_base: 0x%x\n    all_sectors: 0x%x\n    inode_cnt: 0x%x\n    block_bitmap_lba: 0x%x\n    block_bitmap_sectors: 0x%x\n    inode_bitmap_lba: 0x%x\n    inode_bitmap_sectors: 0x%x\n    inode_table_lba: 0x%x\n    inode_table_sectors: 0x%x\n    data_start_lba: 0x%x\n", sb.magic, sb.part_lba_base, sb.sec_cnt, sb.inode_cnt, sb.block_bitmap_lba, sb.block_bitmap_sects, sb.inode_bitmap_lba, sb.inode_bitmap_sects, sb.inode_table_lba, sb.inode_table_sects, sb.data_start_lba);
 
+    disk *hd = part->my_disk;
 
     /*************************************
      * 1 将 super_block 写入本分区的 1 扇区
@@ -447,7 +448,7 @@ void fs_init() {
                     }
                     else {  // 其它文件系统不支持,一律按无文件系统处理
                         printk("formatting %s's partition %s......\n", hd->name, part->name);
-                        partition_format(hd, part);
+                        partition_format(part);
                     }
                 }
                 part_idx++;

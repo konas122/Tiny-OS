@@ -35,7 +35,7 @@ int main(void) {
     process_execute(u_prog_a, "user_prog_a");
     process_execute(u_prog_b, "user_prog_b");
 
-   uint32_t fd = sys_open("/file1", O_RDWR);
+   uint32_t fd = sys_open("/file1", O_RDWR | O_CREAT);
    printf("open /file1, fd:%d\n", fd);
    char buf[64] = {0};
     sys_write(fd, "hello,world\n", 12);

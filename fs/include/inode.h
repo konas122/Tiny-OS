@@ -25,8 +25,8 @@ typedef struct inode {
 
 
 inode* inode_open(partition* part, uint32_t inode_no);
-void inode_sync(partition* part, inode* inode, void* io_buf);
+void inode_sync(partition* part, inode* inode_ptr, void* io_buf);
 void inode_init(uint32_t inode_no, inode* new_inode);
-void inode_close(inode* inode);
+void inode_close(inode* inode_ptr);
 
 #endif

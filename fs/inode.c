@@ -40,14 +40,14 @@ static void inode_locate(partition *part, uint32_t inode_no, inode_position *ino
 }
 
 
-void inode_sync(partition *part, inode *inode, void *io_buf) {
-    uint8_t inode_no = inode->i_no;
+void inode_sync(partition *part, inode *inode_ptr, void *io_buf) {
+    uint8_t inode_no = inode_ptr->i_no;
     inode_position inode_pos;
     inode_locate(part, inode_no, &inode_pos);
     ASSERT(inode_pos.sec_lba <= (part->start_lba + part->sec_cnt));
 
-    struct inode pure_inode;
-    memcpy(&pure_inode, inode, sizeof(inode));
+    inode pure_inode;
+    memcpy(&pure_inode, inode_ptr, sizeof(inode));
 
     pure_inode.i_open_cnts = 0;
     pure_inode.write_deny = false;
@@ -113,14 +113,14 @@ inode *inode_open(partition *part, uint32_t inode_no) {
 }
 
 
-void inode_close(inode *inode) {
+void inode_close(inode *inode_ptr) {
     intr_status old_status = intr_disable();
-    if (--inode->i_open_cnts == 0) {
-        list_remove(&inode->inode_tag);
+    if (--inode_ptr->i_open_cnts == 0) {
+        list_remove(&inode_ptr->inode_tag);
         task_struct *cur = running_thread();
         uint32_t *cur_pagedir = cur->pgdir;
         cur->pgdir = NULL;
-        sys_free(inode);
+        sys_free(inode_ptr);
         cur->pgdir = cur_pagedir;
     }
     intr_set_status(old_status);
