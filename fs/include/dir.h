@@ -27,10 +27,13 @@ typedef struct dir_entry {
 extern dir root_dir;
 
 void open_root_dir(partition *part);
+
 dir *dir_open(partition *part, uint32_t inode_no);
 void dir_close(dir *dir_ptr);
+
 bool search_dir_entry(partition *part, dir *pdir, const char *name, struct dir_entry *dir_e);
 void create_dir_entry(char *filename, uint32_t inode_no, uint8_t file_type, dir_entry *p_de);
+bool delete_dir_entry(partition *part, dir *pdir, uint32_t inode_no, void *io_buf);
 bool sync_dir_entry(dir *parent_dir, dir_entry *p_de, void *io_buf);
 
 #endif

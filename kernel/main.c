@@ -35,20 +35,24 @@ int main(void) {
     process_execute(u_prog_a, "user_prog_a");
     process_execute(u_prog_b, "user_prog_b");
 
-   uint32_t fd = sys_open("/file1", O_RDWR | O_CREAT);
-   printf("open /file1, fd:%d\n", fd);
-   char buf[64] = {0};
+    printf("\n________  create and write file1  ________\n");
+    uint32_t fd = sys_open("/file1", O_RDWR | O_CREAT);
+    printf("open /file1, fd:%d\n", fd);
+    char buf[64] = {0};
     sys_write(fd, "hello,world\n", 12);
     sys_close(fd);
 
-   printf("________  close file1 and reopen  ________\n");
-   fd = sys_open("/file1", O_RDWR);
-   memset(buf, 0, 64);
-   int read_bytes = sys_read(fd, buf, 24);
-   printf("4_ read %d bytes:\n%s", read_bytes, buf);
+    printf("_________  read and close file1  _________\n");
+    fd = sys_open("/file1", O_RDWR);
+    memset(buf, 0, 64);
+    int read_bytes = sys_read(fd, buf, 24);
+    printf("read %d bytes: %s", read_bytes, buf);
 
     sys_close(fd);
     printf("%d closed now\n", fd);
+
+    printf("____________  delete file1 _______________\n");
+    printf("/file1 delete %s!\n", sys_unlink("/file1") == 0 ? "done" : "fail");
 
     while(1) {
         // console_put_str("Main ");

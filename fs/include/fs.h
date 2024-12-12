@@ -28,6 +28,13 @@ typedef enum oflags {
 } oflags;
 
 
+typedef enum whence {
+    SEEK_SET = 1,
+    SEEK_CUR,
+    SEEK_END
+} whence;
+
+
 typedef struct path_search_record {
     char searched_path[MAX_PATH_LEN];   // 查找过程中的父路径
     struct dir *parent_dir;                    // 文件或目录所在的直接父目录
@@ -44,5 +51,8 @@ int32_t sys_close(int32_t fd);
 int32_t sys_open(const char* pathname, uint8_t flags);
 int32_t sys_write(int32_t fd, const void* buf, uint32_t count);
 int32_t sys_read(int32_t fd, void *buf, uint32_t count);
+int32_t sys_lseek(int32_t fd, int32_t offset, uint8_t whence);
+int32_t sys_unlink(const char* pathname);
+int32_t sys_mkdir(const char* pathname);
 
 #endif

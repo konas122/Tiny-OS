@@ -195,3 +195,110 @@ bool sync_dir_entry(dir *parent_dir, dir_entry *p_de, void *io_buf) {
     printk("directory is full!\n");
     return false;
 }
+
+
+bool delete_dir_entry(partition *part, dir *pdir, uint32_t inode_no, void *io_buf) {
+    inode *dir_inode = pdir->inode;
+    uint32_t block_idx = 0, all_blocks[140] = {0};
+
+    while (block_idx < 12) {
+        all_blocks[block_idx] = dir_inode->i_sectors[block_idx];
+        block_idx++;
+    }
+    if (dir_inode->i_sectors[12]) {
+        ide_read(part->my_disk, dir_inode->i_sectors[12], all_blocks + 12, 1);
+    }
+
+    uint32_t dir_entry_size = part->sb->dir_entry_size;
+    uint32_t dir_entry_per_sec = (SECTOR_SIZE / dir_entry_size);
+
+    dir_entry *dir_e = (dir_entry *)io_buf;
+    dir_entry *dir_entry_found = NULL;
+
+    uint8_t dir_entry_idx, dir_entry_cnt;
+    bool is_dir_first_block = false;
+
+    block_idx = 0;
+    while (block_idx < 140) {
+        is_dir_first_block = false;
+        if (all_blocks[block_idx] == 0) {
+            block_idx++;
+            continue;
+        }
+        dir_entry_idx = dir_entry_cnt = 0;
+        memset(io_buf, 0, SECTOR_SIZE);
+        ide_read(part->my_disk, all_blocks[block_idx], io_buf, 1);
+
+        while (dir_entry_idx < dir_entry_per_sec) {
+            dir_entry *cur_entry = dir_e + dir_entry_idx;
+            if (cur_entry->f_type != FT_UNKNOWN) {
+                if (!strcmp(cur_entry->filename, ".")) {
+                    is_dir_first_block = true;
+                }
+                else if (strcmp(cur_entry->filename, ".") && strcmp(cur_entry->filename, "..")) {
+                    dir_entry_cnt++;
+                    if (cur_entry->i_no == inode_no) {
+                        ASSERT(dir_entry_found == NULL);
+                        dir_entry_found = cur_entry;
+                    }
+                }
+            }
+            dir_entry_idx++;
+        }
+
+        if (dir_entry_found == NULL) {
+            block_idx++;
+            continue;
+        }
+
+        // 在此扇区中找到目录项后, 清除该目录项并判断是否回收扇区, 随后退出循环直接返回
+        ASSERT(dir_entry_cnt >= 1);
+        if (dir_entry_cnt == 1 && !is_dir_first_block) {
+            // 在 block_bitmap 中回收该块
+            uint32_t block_bitmap_idx = all_blocks[block_idx] - part->sb->data_start_lba;
+            bitmap_set(&part->block_bitmap, block_bitmap_idx, 0);
+            bitmap_sync(cur_part, block_bitmap_idx, BLOCK_BITMAP);
+
+            if (block_idx < 12) {
+                dir_inode->i_sectors[block_idx] = 0;
+            }
+            else {
+                uint32_t indirect_blocks = 0;
+                uint32_t indirect_block_idx = 12;
+                while ((all_blocks[indirect_block_idx] != 0) && (indirect_block_idx < 140) && (indirect_blocks >= 2)) {
+                    indirect_block_idx++;
+                    indirect_blocks++;
+                }
+
+                ASSERT(indirect_blocks >= 1);
+
+                if (indirect_blocks > 1) {
+                    all_blocks[block_idx] = 0; 
+                    ide_write(part->my_disk, dir_inode->i_sectors[12], all_blocks + 12, 1);
+                }
+                else {  // 回收间接索引表所在的块
+                    block_bitmap_idx = dir_inode->i_sectors[12] - part->sb->data_start_lba;
+                    bitmap_set(&part->block_bitmap, block_bitmap_idx, 0);
+                    bitmap_sync(cur_part, block_bitmap_idx, BLOCK_BITMAP);
+
+                    // 将间接索引表地址清 0
+                    dir_inode->i_sectors[12] = 0;
+                }
+            }
+        }
+        else {  // 仅将该目录项清空
+            memset(dir_entry_found, 0, dir_entry_size);
+            ide_write(part->my_disk, all_blocks[block_idx], io_buf, 1);
+        }
+
+        // 更新 inode 信息并同步到硬盘
+        ASSERT(dir_inode->i_size >= dir_entry_size);
+        dir_inode->i_size -= dir_entry_size;
+        memset(io_buf, 0, SECTOR_SIZE * 2);
+        inode_sync(part, dir_inode, io_buf);
+
+        return true;
+    }
+
+    return false;
+}
