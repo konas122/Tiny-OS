@@ -176,10 +176,10 @@ static void intr_keyboard_handler(void) {
             }
         }
         else {  // 默认为字母键
-            if (shift_down_last && caps_lock_last) {  // 如果shift和capslock同时按下
+            if (shift_down_last && caps_lock_last) {  // 如果 shift 和 capslock 同时按下
                 shift = false;
             }
-            else if (shift_down_last || caps_lock_last) { // 如果shift和capslock任意被按下
+            else if (shift_down_last || caps_lock_last) { // 如果 shift 和 capslock 任意被按下
                 shift = true;
             }
             else {
