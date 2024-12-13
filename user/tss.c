@@ -34,7 +34,7 @@ typedef struct TSS {
     uint32_t ldt;
     uint32_t trace;
     uint32_t io_base;
-} TSS; 
+} TSS;
 
 static TSS tss;
 

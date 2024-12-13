@@ -11,10 +11,9 @@
 
 
 typedef struct dir {
-    struct inode* inode;   
+    struct inode* inode;
     uint32_t dir_pos;       // 记录在目录内的偏移
     uint8_t dir_buf[512];   // 目录的数据缓存
-    // TODO: opened_threads_list
 } dir;
 
 

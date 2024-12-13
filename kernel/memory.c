@@ -441,7 +441,7 @@ void sys_free(void *ptr) {
                 ASSERT(elem_find(&a->desc->free_list, &b->free_elem));
                 list_remove(&b->free_elem);
             }
-            mfree_page(PF, a, 1); 
+            mfree_page(PF, a, 1);
         } 
     }
     lock_release(&mem_pool->lock);

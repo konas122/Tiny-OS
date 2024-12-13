@@ -27,7 +27,7 @@ void init_all() {
 
     intr_enable();  // 后面的 ide_init 需要打开中断
     ide_init();     // 初始化硬盘
-    fs_init(); // 初始化文件系统
+    fs_init();      // 初始化文件系统
 
     put_str("\ninit_all\n\n");
 }

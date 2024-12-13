@@ -37,7 +37,7 @@ typedef enum whence {
 
 typedef struct path_search_record {
     char searched_path[MAX_PATH_LEN];   // 查找过程中的父路径
-    struct dir *parent_dir;                    // 文件或目录所在的直接父目录
+    struct dir *parent_dir;             // 文件或目录所在的直接父目录
     file_types file_type;
 } path_search_record;
 

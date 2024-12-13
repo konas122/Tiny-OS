@@ -2,7 +2,7 @@
 #define __DEVICE_KEYBOARD_H__
 
 
-void keyboard_init(void); 
+void keyboard_init(void);
 
 
 #endif

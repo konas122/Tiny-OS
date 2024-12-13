@@ -29,7 +29,7 @@ int memcmp(const void* a_, const void* b_, uint32_t size) {
     ASSERT(a != NULL || b != NULL);
     while (size-- > 0) {
         if (*a != *b) {
-            return *a > *b ? 1 : -1; 
+            return *a > *b ? 1 : -1;
         }
         a++;
         b++;

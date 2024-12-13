@@ -13,7 +13,7 @@ void list_init(list* list) {
 void list_insert_before(list_elem* before, list_elem* elem) { 
    intr_status old_status = intr_disable();
 
-   before->prev->next = elem; 
+   before->prev->next = elem;
 
    elem->prev = before->prev;
    elem->next = before;
@@ -83,7 +83,7 @@ uint32_t list_len(list* plist) {
     list_elem* elem = plist->head.next;
     uint32_t length = 0;
     while (elem != &plist->tail) {
-        length++; 
+        length++;
         elem = elem->next;
     }
     return length;

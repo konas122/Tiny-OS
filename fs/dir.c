@@ -273,7 +273,7 @@ bool delete_dir_entry(partition *part, dir *pdir, uint32_t inode_no, void *io_bu
                 ASSERT(indirect_blocks >= 1);
 
                 if (indirect_blocks > 1) {
-                    all_blocks[block_idx] = 0; 
+                    all_blocks[block_idx] = 0;
                     ide_write(part->my_disk, dir_inode->i_sectors[12], all_blocks + 12, 1);
                 }
                 else {  // 回收间接索引表所在的块

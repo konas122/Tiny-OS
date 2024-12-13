@@ -13,7 +13,7 @@ void ioqueue_init(ioqueue *ioq) {
 
 
 static int32_t next_pos(int32_t pos) {
-    return (pos + 1) % bufsize; 
+    return (pos + 1) % bufsize;
 }
 
 
@@ -40,7 +40,7 @@ static void ioq_wait(task_struct** waiter) {
 // 唤醒 waiter
 static void wakeup(task_struct** waiter) {
     ASSERT(*waiter != NULL);
-    thread_unblock(*waiter); 
+    thread_unblock(*waiter);
     *waiter = NULL;
 }
 

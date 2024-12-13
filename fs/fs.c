@@ -43,7 +43,7 @@ static bool mount_partition(list_elem *pelem, int arg) {
         PANIC("alloc memory failed!");
     }
     cur_part->block_bitmap.btmp_bytes_len = sb_buf->block_bitmap_sects * SECTOR_SIZE;
-    ide_read(hd, sb_buf->block_bitmap_lba, cur_part->block_bitmap.bits, sb_buf->block_bitmap_sects);   
+    ide_read(hd, sb_buf->block_bitmap_lba, cur_part->block_bitmap.bits, sb_buf->block_bitmap_sects);
 
     // inode bitmap
     cur_part->inode_bitmap.bits = (uint8_t*)sys_malloc(sb_buf->inode_bitmap_sects * SECTOR_SIZE);
@@ -51,7 +51,7 @@ static bool mount_partition(list_elem *pelem, int arg) {
         PANIC("alloc memory failed!");
     }
     cur_part->inode_bitmap.btmp_bytes_len = sb_buf->inode_bitmap_sects * SECTOR_SIZE;
-    ide_read(hd, sb_buf->inode_bitmap_lba, cur_part->inode_bitmap.bits, sb_buf->inode_bitmap_sects);   
+    ide_read(hd, sb_buf->inode_bitmap_lba, cur_part->inode_bitmap.bits, sb_buf->inode_bitmap_sects);
 
     list_init(&cur_part->open_inodes);
     printk("mount %s done!\n", part->name);
@@ -89,7 +89,7 @@ static void partition_format(partition *part) {
     sb.inode_bitmap_sects = inode_bitmap_sects;
 
     sb.inode_table_lba = sb.inode_bitmap_lba + sb.inode_bitmap_sects;
-    sb.inode_table_sects = inode_table_sects; 
+    sb.inode_table_sects = inode_table_sects;
 
     sb.data_start_lba = sb.inode_table_lba + sb.inode_table_sects;
     sb.root_inode_no = 0;
@@ -200,7 +200,7 @@ static char* path_parse(char* pathname, char* name_store) {
     if (pathname[0] == 0) {   // 若路径字符串为空则返回 NULL
         return NULL;
     }
-    return pathname; 
+    return pathname;
 }
 
 
@@ -410,7 +410,7 @@ int32_t sys_read(int32_t fd, void* buf, uint32_t count) {
     }
     ASSERT(buf != NULL);
     uint32_t _fd = fd_local2global(fd);
-    return file_read(&file_table[_fd], buf, count);   
+    return file_read(&file_table[_fd], buf, count);
 }
 
 
@@ -490,7 +490,7 @@ int32_t sys_unlink(const char* pathname) {
         return -1;
     }
 
-    dir* parent_dir = searched_record.parent_dir;  
+    dir* parent_dir = searched_record.parent_dir;
     delete_dir_entry(cur_part, parent_dir, inode_no, io_buf);
     inode_release(cur_part, inode_no);
     sys_free(io_buf);
@@ -532,7 +532,7 @@ int32_t sys_mkdir(const char *pathname) {
     dir *parent_dir = searched_record.parent_dir;
     char *dirname = strrchr(searched_record.searched_path, '/') + 1;
 
-    inode_no = inode_bitmap_alloc(cur_part); 
+    inode_no = inode_bitmap_alloc(cur_part);
     if (inode_no == -1) {
         printk("sys_mkdir: allocate inode failed\n");
         rollback_step = 1;
@@ -670,7 +670,7 @@ int32_t sys_rmdir(const char* pathname) {
 
     int retval = -1;
     if (inode_no == -1) {
-        printk("In %s, sub path %s not exist\n", pathname, searched_record.searched_path); 
+        printk("In %s, sub path %s not exist\n", pathname, searched_record.searched_path);
     }
     else {
         if (searched_record.file_type == FT_REGULAR) {
@@ -801,7 +801,7 @@ int32_t sys_chdir(const char *path) {
             printk("sys_chdir: %s is regular file or other!\n", path);
         }
     }
-    dir_close(searched_record.parent_dir); 
+    dir_close(searched_record.parent_dir);
     return ret;
 }
 

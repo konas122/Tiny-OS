@@ -119,7 +119,7 @@ static void read_from_sector(disk* hd, void* buf, uint8_t sec_cnt) {
         size_in_byte = 256 * 512;
     }
     else { 
-        size_in_byte = sec_cnt * 512; 
+        size_in_byte = sec_cnt * 512;
     }
     insw(reg_data(hd->my_channel), buf, size_in_byte / 2);
 }
@@ -132,7 +132,7 @@ static void write2sector(disk* hd, void* buf, uint8_t sec_cnt) {
         size_in_byte = 256 * 512;
     }
     else { 
-        size_in_byte = sec_cnt * 512; 
+        size_in_byte = sec_cnt * 512;
     }
     outsw(reg_data(hd->my_channel), buf, size_in_byte / 2);
 }
@@ -248,8 +248,8 @@ void ide_write(disk* hd, uint32_t lba, void* buf, uint32_t sec_cnt) {
 static void swap_pairs_bytes(const char* dst, char* buf, uint32_t len) {
     uint8_t idx;
     for (idx = 0; idx < len; idx += 2) {
-        buf[idx + 1] = *dst++;   
-        buf[idx]     = *dst++;   
+        buf[idx + 1] = *dst++;
+        buf[idx]     = *dst++;
     }
     buf[idx] = '\0';
 }
@@ -415,7 +415,7 @@ void ide_init() {
                 partition_scan(hd, 0);  // 扫描该硬盘上的分区  
             }
             p_no = 0, l_no = 0;
-            dev_no++; 
+            dev_no++;
         }
         dev_no = 0;
         channel_no++;

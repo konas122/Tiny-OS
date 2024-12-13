@@ -65,7 +65,7 @@ int main(void) {
         sys_write(fd, "Catch me if you can!\n", 21);
         sys_lseek(fd, 0, SEEK_SET);
         char buf[32] = {0};
-        sys_read(fd, buf, 21); 
+        sys_read(fd, buf, 21);
         printf("/dir1/subdir1/file2 says: %s", buf);
         sys_close(fd);
         printf("%d closed now\n", fd);

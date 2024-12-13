@@ -36,7 +36,7 @@ static void idle(void *arg UNUSED) {
 
 
 task_struct* running_thread() {
-    uint32_t esp; 
+    uint32_t esp;
     asm ("mov %%esp, %0" : "=g" (esp));
     // 取 esp 整数部分即 pcb 起始地址
     return (task_struct*)(esp & 0xfffff000);
@@ -56,7 +56,7 @@ static void kernel_thread(thread_func* function, void* func_arg) {
     // 执行 function 前要开中断, 避免后面的时钟中断被屏蔽, 而无法调度其它线程
     intr_enable();
 
-    function(func_arg); 
+    function(func_arg);
 }
 
 
@@ -76,7 +76,7 @@ void init_thread(task_struct *pthread, char *name, int prio) {
     memset(pthread, 0, sizeof(*pthread));
     strcpy(pthread->name, name);
     pthread->pid = allocate_pid();
-    pthread->status = TASK_RUNNING; 
+    pthread->status = TASK_RUNNING;
     pthread->priority = prio;
 
     // 由于把 main 函数也封装成一个线程, 并且它一直是运行的, 故将其直接设为 TASK_RUNNING

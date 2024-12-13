@@ -19,7 +19,7 @@ static inline void outb(uint16_t port, uint8_t data) {
 /*********************************************************
     a 表示用寄存器 al 或 ax 或 eax, 对端口指定 N 表示 0-255, d 表示用 dx 存储端口号, 
     %b0 表示对应 al, %w1 表示对应 dx */ 
-    asm volatile ( "outb %b0, %w1" : : "a" (data), "Nd" (port));    
+    asm volatile ( "outb %b0, %w1" : : "a" (data), "Nd" (port));
 /******************************************************/
 }
 
