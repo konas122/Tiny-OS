@@ -347,8 +347,8 @@ static bool partition_info(list_elem* pelem, int arg UNUSED) {
     partition* part = elem2entry(partition, part_tag, pelem);
     printk("    %s start_lba: 0x%x, sec_cnt: 0x%x\n",part->name, part->start_lba, part->sec_cnt);
     /**
-     * 在此处return false与函数本身功能无关,
-     * 只是为了让主调函数list_traversal继续向下遍历元素
+     * 在此处 return false 与函数本身功能无关,
+     * 只是为了让主调函数 list_traversal 继续向下遍历元素
      */
     return false;
 }

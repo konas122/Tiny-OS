@@ -12,7 +12,23 @@
 #include "stdio_kernel.h"
 
 
+typedef struct cwd_dir {
+    uint32_t inode_no;
+    list_elem cwd_tag;
+} cwd_dir;
+
+
 partition *cur_part;
+
+
+static bool find_cwd_dir(list_elem *pelem, int inode_no) {
+    uint32_t i_no = (uint32_t)inode_no;
+    cwd_dir *pcwd = elem2entry(cwd_dir, cwd_tag, pelem);
+    if (pcwd->inode_no == i_no) {
+        return true;
+    }
+    return false;
+}
 
 
 // 在分区链表中找到名为 part_name 的分区, 并将其指针赋值给 cur_part
@@ -54,6 +70,8 @@ static bool mount_partition(list_elem *pelem, int arg) {
     ide_read(hd, sb_buf->inode_bitmap_lba, cur_part->inode_bitmap.bits, sb_buf->inode_bitmap_sects);
 
     list_init(&cur_part->open_inodes);
+    list_init(&cur_part->cwd_dirs);
+
     printk("mount %s done!\n", part->name);
 
     return true;
@@ -678,7 +696,11 @@ int32_t sys_rmdir(const char* pathname) {
         }
         else {
             dir *dir = dir_open(cur_part, inode_no);
-            if (!dir_is_empty(dir)) {
+            list_elem *cwd_tag = list_traversal(&cur_part->cwd_dirs, find_cwd_dir, inode_no);
+            if (cwd_tag != NULL) {
+                printk("dir %s is occupied!\n", pathname);
+            }
+            else if (!dir_is_empty(dir)) {
                 printk("dir %s is not empty!\n", pathname);
             }
             else {
@@ -776,7 +798,7 @@ char *sys_getcwd(char *buf, uint32_t size) {
     ASSERT(strlen(full_path_reverse) <= size);
 
     char *last_slash;
-    while (last_slash = strrchr(full_path_reverse, '/')) {
+    while ((last_slash = strrchr(full_path_reverse, '/'))) {
         uint16_t len = strlen(buf);
         strcpy(buf + len, last_slash);
         *last_slash = 0;
@@ -794,8 +816,21 @@ int32_t sys_chdir(const char *path) {
     if (inode_no != -1) {
         if (searched_record.file_type == FT_DIRECTORY) {
             task_struct *cur = running_thread();
+            uint32_t prev_inode = cur->cwd_inode_nr;
             cur->cwd_inode_nr = inode_no;
             ret = 0;
+
+            if (prev_inode != 0) {
+                list_elem *prev_cwd_tag = list_traversal(&cur_part->cwd_dirs, find_cwd_dir, prev_inode);
+                if (prev_cwd_tag != NULL) {
+                    list_remove(prev_cwd_tag);
+                    cwd_dir *prev_cwd = elem2entry(cwd_dir, cwd_tag, prev_cwd_tag);
+                    sys_free(prev_cwd);
+                }
+            }
+            cwd_dir *new_cwd = (cwd_dir *)sys_malloc(sizeof(cwd_dir));
+            new_cwd->inode_no = inode_no;
+            list_push(&cur_part->cwd_dirs, &new_cwd->cwd_tag);
         }
         else {
             printk("sys_chdir: %s is regular file or other!\n", path);

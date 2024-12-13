@@ -17,6 +17,7 @@ typedef struct partition {
     bitmap block_bitmap;    // 块位图
     bitmap inode_bitmap;    // inode 位图
     list open_inodes;       // 本分区打开的 inode 队列
+    list cwd_dirs;          // 本分区的所有工作目录
 } partition;
 
 

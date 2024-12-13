@@ -120,15 +120,22 @@ int main(void) {
     sys_getcwd(cwd_buf, 32);
     printf("cwd: %s\n", cwd_buf);
     sys_chdir("/dir1");
-    printf("change cwd now\n");
     sys_getcwd(cwd_buf, 32);
-    printf("cwd: %s\n", cwd_buf);
+    printf("change cwd to: %s\n", cwd_buf);
 
     printf("try to delete directory /dir1\n");
     if (sys_rmdir("/dir1") == 0) {
         printf("/dir1 delete done!\n");
     }
 
+    sys_chdir("/");
+    sys_getcwd(cwd_buf, 32);
+    printf("change cwd to: %s\n", cwd_buf);
+
+    printf("try to delete directory /dir1 again\n");
+    if (sys_rmdir("/dir1") == 0) {
+        printf("/dir1 delete done!\n");
+    }
 
     while(1) {
         // console_put_str("Main ");
