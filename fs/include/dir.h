@@ -14,6 +14,7 @@ typedef struct dir {
     struct inode* inode;   
     uint32_t dir_pos;       // 记录在目录内的偏移
     uint8_t dir_buf[512];   // 目录的数据缓存
+    // TODO: opened_threads_list
 } dir;
 
 
@@ -30,6 +31,9 @@ void open_root_dir(partition *part);
 
 dir *dir_open(partition *part, uint32_t inode_no);
 void dir_close(dir *dir_ptr);
+dir_entry *dir_read(dir *dir_ptr);
+bool dir_is_empty(dir *dir_ptr);
+int32_t dir_remove(dir *parent_dir, dir *child_dir);
 
 bool search_dir_entry(partition *part, dir *pdir, const char *name, struct dir_entry *dir_e);
 void create_dir_entry(char *filename, uint32_t inode_no, uint8_t file_type, dir_entry *p_de);

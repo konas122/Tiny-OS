@@ -102,6 +102,7 @@ void init_thread(task_struct *pthread, char *name, int prio) {
         pthread->fd_table[i] = -1;
     }
 
+    pthread->cwd_inode_nr = 0;  // 默认工作目录是根目录
     pthread->stack_magic = 0x19780506;
 }
 

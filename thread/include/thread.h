@@ -85,6 +85,7 @@ typedef struct task_struct {
     virtual_addr userprog_vaddr;    // 用户进程的虚拟地址
     mem_block_desc u_block_desc[DESC_CNT];
 
+    uint32_t cwd_inode_nr;  // 进程所在的工作目录的 inode 编号
     uint32_t stack_magic;   // 用这串数字做栈的边界标记, 用于检测栈的溢出
 } task_struct;
 
@@ -93,8 +94,8 @@ extern list thread_all_list;
 extern list thread_ready_list;
 
 
-void thread_create(task_struct *pthread, thread_func function, void *func_arg);
 void init_thread(task_struct *pthread, char *name, int prio);
+void thread_create(task_struct *pthread, thread_func function, void *func_arg);
 task_struct *thread_start(char *name, int prio, thread_func function, void *func_arg);
 
 task_struct *running_thread(void);

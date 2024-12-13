@@ -302,3 +302,84 @@ bool delete_dir_entry(partition *part, dir *pdir, uint32_t inode_no, void *io_bu
 
     return false;
 }
+
+
+dir_entry *dir_read(dir *dir_ptr) {
+    dir_entry *dir_e = (dir_entry *)dir_ptr->dir_buf;
+    inode *dir_inode = dir_ptr->inode;
+
+    uint32_t all_blocks[140] = {0};
+    uint32_t block_cnt = 12, block_idx = 0, dir_entry_idx = 0;
+    while (block_idx < 12) {
+        all_blocks[block_idx] = dir_inode->i_sectors[block_idx];
+        block_idx++;
+    }
+    if (dir_inode->i_sectors[12] != 0) {
+        ide_read(cur_part->my_disk, dir_inode->i_sectors[12], all_blocks + 12, 1);
+        block_cnt = 140;
+    }
+    block_idx = 0;
+
+    uint32_t cur_dir_entry_pos = 0;
+    uint32_t dir_entry_size = cur_part->sb->dir_entry_size;
+    uint32_t dir_entry_per_sec = SECTOR_SIZE / dir_entry_size;
+
+    while (block_idx < block_cnt) {
+        if (dir_ptr->dir_pos >= dir_inode->i_size) {
+            return NULL;
+        }
+        if (all_blocks[block_idx] == 0) {
+            block_idx++;
+            continue;
+        }
+        memset(dir_e, 0, SECTOR_SIZE);
+        ide_read(cur_part->my_disk, all_blocks[block_idx], dir_e, 1);
+
+        for (dir_entry_idx = 0; dir_entry_idx < dir_entry_per_sec; ++dir_entry_idx) {
+            dir_entry *cur = dir_e + dir_entry_idx;
+            if (cur->f_type) {  // f_type 不为 FT_UNKNOWN
+                if (cur_dir_entry_pos < dir_ptr->dir_pos) {
+                    cur_dir_entry_pos += dir_entry_size;
+                    continue;
+                }
+                ASSERT(cur_dir_entry_pos == dir_ptr->dir_pos);
+                dir_ptr->dir_pos += dir_entry_size;
+                return cur;
+            }
+        }
+        block_idx++;
+    }
+    return NULL;
+}
+
+
+bool dir_is_empty(dir *dir_ptr) {
+    inode *dir_inode = dir_ptr->inode;
+    return (dir_inode->i_size == cur_part->sb->dir_entry_size * 2);
+}
+
+
+int32_t dir_remove(dir* parent_dir, dir* child_dir) {
+    inode *child_dir_inode = child_dir->inode;
+
+    // 空目录只在 inode->i_sectors[0] 中有扇区, 其它扇区都应该为空
+    int32_t block_idx = 1;
+    while (block_idx < 13) {
+        ASSERT(child_dir_inode->i_sectors[block_idx] == 0);
+        block_idx++;
+    }
+
+    void *io_buf = sys_malloc(SECTOR_SIZE * 2);
+    if (io_buf == NULL) {
+        printk("dir_remove: malloc for io_buf failed\n");
+        return -1;
+    }
+
+    // 在父目录 parent_dir 中删除子目录 child_dir 对应的目录项
+    delete_dir_entry(cur_part, parent_dir, child_dir_inode->i_no, io_buf);
+
+    // 回收 inode 中 i_secotrs 中所占用的扇区, 并同步 inode_bitmap 和 block_bitmap
+    inode_release(cur_part, child_dir_inode->i_no);
+    sys_free(io_buf);
+    return 0;
+}
