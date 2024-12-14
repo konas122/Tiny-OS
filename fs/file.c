@@ -93,6 +93,31 @@ void bitmap_sync(partition *part, uint32_t bit_idx, uint8_t btmp_type) {
 }
 
 
+void bitmap_sync_multi(partition *part, uint32_t bit_idx_start, uint32_t bit_idx_end, uint8_t btmp_type) {
+    uint32_t off_sec_start = bit_idx_start / 4096;
+    uint32_t off_sec_end = DIV_ROUND_UP(bit_idx_end, 4096);
+
+    uint32_t off_size = off_sec_start * BLOCK_SIZE;
+
+    uint32_t sec_lba;
+    uint8_t *bitmap_off;
+    uint32_t sec_cnt = off_sec_end - off_sec_start + 1;
+
+    switch (btmp_type) {
+    case INODE_BITMAP:
+        sec_lba = part->sb->inode_bitmap_lba + off_sec_start;
+        bitmap_off = part->inode_bitmap.bits + off_size;
+        break;
+    
+    case BLOCK_BITMAP:
+        sec_lba = part->sb->block_bitmap_lba + off_sec_start;
+        bitmap_off = part->block_bitmap.bits + off_size;
+        break;
+    }
+    ide_write(part->my_disk, sec_lba, bitmap_off, sec_cnt);
+}
+
+
 int32_t file_create(dir *parent_dir, char *filename, uint8_t flag) {
     void *io_buf = sys_malloc(1024);
     if (io_buf == NULL) {
