@@ -435,12 +435,9 @@ void sys_free(void *ptr) {
     else {
         list_append(&a->desc->free_list, &b->free_elem);
         if (++a->cnt == a->desc->blocks_per_arena) {
-            uint32_t block_idx;
-            for (block_idx = 0; block_idx < a->desc->blocks_per_arena; block_idx++) {
-                mem_block*  b = arena2block(a, block_idx);
-                ASSERT(elem_find(&a->desc->free_list, &b->free_elem));
-                list_remove(&b->free_elem);
-            }
+            intr_status old_status = intr_disable();
+            list_init(&a->desc->free_list);     // 通过重新初始化来暴力清空
+            intr_set_status(old_status);
             mfree_page(PF, a, 1);
         } 
     }

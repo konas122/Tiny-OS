@@ -180,7 +180,7 @@ intr_status intr_set_status(intr_status status) {
 
 
 void register_handler(uint8_t vector_no, intr_handler function) {
-    idt_table[vector_no] = function; 
+    idt_table[vector_no] = function;
 }
 
 
