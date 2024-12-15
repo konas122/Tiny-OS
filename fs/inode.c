@@ -160,6 +160,9 @@ void inode_release(partition *part, uint32_t inode_no) {
         block_idx++;
     }
 
+    uint32_t block_bitmap_idx_end = UINT32_MIN;
+    uint32_t block_bitmap_idx_start = UINT32_MAX;
+
     if (inode_to_del->i_sectors[12] != 0) {
         ide_read(part->my_disk, inode_to_del->i_sectors[12], all_blocks + 12, 1);
         block_cnt = 140;
@@ -168,7 +171,9 @@ void inode_release(partition *part, uint32_t inode_no) {
         block_bitmap_idx = inode_to_del->i_sectors[12] - part->sb->data_start_lba;
         ASSERT(block_bitmap_idx > 0);
         bitmap_set(&part->block_bitmap, block_bitmap_idx, 0);
-        bitmap_sync(cur_part, block_bitmap_idx, BLOCK_BITMAP);
+
+        block_bitmap_idx_end = max(block_bitmap_idx_end, block_bitmap_idx);
+        block_bitmap_idx_start = min(block_bitmap_idx_start, block_bitmap_idx);
     }
 
     block_idx = 0;
@@ -177,7 +182,9 @@ void inode_release(partition *part, uint32_t inode_no) {
             block_bitmap_idx = all_blocks[block_idx] - part->sb->data_start_lba;
             ASSERT(block_bitmap_idx > 0);
             bitmap_set(&part->block_bitmap, block_bitmap_idx, 0);
-            bitmap_sync(cur_part, block_bitmap_idx, BLOCK_BITMAP);
+
+            block_bitmap_idx_end = max(block_bitmap_idx_end, block_bitmap_idx);
+            block_bitmap_idx_start = min(block_bitmap_idx_start, block_bitmap_idx);
         }
         block_idx++;
     }
@@ -185,6 +192,7 @@ void inode_release(partition *part, uint32_t inode_no) {
     // 回收该 inode 在 inode_bitmap 中所占用 bit
     bitmap_set(&part->inode_bitmap, inode_no, 0);
     bitmap_sync(cur_part, inode_no, INODE_BITMAP);
+    bitmap_sync_multi(cur_part, block_bitmap_idx_start, block_bitmap_idx_end, BLOCK_BITMAP);
 
     void *io_buf = sys_malloc(1024);
     inode_delete(part, inode_no, io_buf);

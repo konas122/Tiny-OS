@@ -264,6 +264,9 @@ int32_t file_write(file *file, const void * buf, uint32_t count) {
     int32_t indirect_block_table;   // 用来获取一级间接表地址
     uint32_t block_idx;             // 块索引
 
+    uint32_t block_bitmap_idx_end = UINT32_MIN;
+    uint32_t block_bitmap_idx_start = UINT32_MAX;
+
     if (file->fd_inode->i_sectors[0] == 0) {    // 文件第一次写
         block_lba = block_bitmap_alloc(cur_part);
         if (block_lba == -1) {
@@ -273,7 +276,9 @@ int32_t file_write(file *file, const void * buf, uint32_t count) {
         file->fd_inode->i_sectors[0] = block_lba;
         block_bitmap_idx = block_lba - cur_part->sb->data_start_lba;
         ASSERT(block_bitmap_idx != 0);
-        bitmap_sync(cur_part, block_bitmap_idx, BLOCK_BITMAP);
+
+        block_bitmap_idx_end = max(block_bitmap_idx_end, block_bitmap_idx);
+        block_bitmap_idx_start = min(block_bitmap_idx_start, block_bitmap_idx);
     }
 
     uint32_t file_has_used_blocks = file->fd_inode->i_size / BLOCK_SIZE + 1;
@@ -310,7 +315,9 @@ int32_t file_write(file *file, const void * buf, uint32_t count) {
                 file->fd_inode->i_sectors[block_idx] = all_blocks[block_idx] = block_lba;
 
                 block_bitmap_idx = block_lba - cur_part->sb->data_start_lba;
-                bitmap_sync(cur_part, block_bitmap_idx, BLOCK_BITMAP);
+
+                block_bitmap_idx_end = max(block_bitmap_idx_end, block_bitmap_idx);
+                block_bitmap_idx_start = min(block_bitmap_idx_start, block_bitmap_idx);
 
                 block_idx++;
             }
@@ -348,7 +355,9 @@ int32_t file_write(file *file, const void * buf, uint32_t count) {
                     all_blocks[block_idx] = block_lba;
                 }
                 block_bitmap_idx = block_lba - cur_part->sb->data_start_lba;
-                bitmap_sync(cur_part, block_bitmap_idx, BLOCK_BITMAP);
+
+                block_bitmap_idx_end = max(block_bitmap_idx_end, block_bitmap_idx);
+                block_bitmap_idx_start = min(block_bitmap_idx_start, block_bitmap_idx);
 
                 block_idx++;   // 下一个新扇区
             }
@@ -370,11 +379,15 @@ int32_t file_write(file *file, const void * buf, uint32_t count) {
                 all_blocks[block_idx++] = block_lba;
 
                 block_bitmap_idx = block_lba - cur_part->sb->data_start_lba;
-                bitmap_sync(cur_part, block_bitmap_idx, BLOCK_BITMAP);
+
+                block_bitmap_idx_end = max(block_bitmap_idx_end, block_bitmap_idx);
+                block_bitmap_idx_start = min(block_bitmap_idx_start, block_bitmap_idx);
             }
             ide_write(cur_part->my_disk, indirect_block_table, all_blocks + 12, 1); // 同步一级间接块表到硬盘
         }
     }
+
+    bitmap_sync_multi(cur_part, block_bitmap_idx_start, block_bitmap_idx_end, BLOCK_BITMAP);
 
     bool first_write_block = true;
     // 块地址已经收集到 all_blocks 中, 下面开始写数据

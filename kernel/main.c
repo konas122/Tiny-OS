@@ -59,7 +59,7 @@ int main(void) {
     printf("/dir1/subdir1 create %s!\n", sys_mkdir("/dir1/subdir1") == 0 ? "done" : "fail");
 
     printf("________  create and write file2  ________\n");
-    fd = sys_open("/dir1/subdir1/file2", O_CREAT|O_RDWR);
+    fd = sys_open("/dir1/subdir1/file2", O_CREAT | O_RDWR);
     if (fd != -1) {
         printf("/dir1/subdir1/file2 create done!\n");
         sys_write(fd, "Catch me if you can!\n", 21);
@@ -75,8 +75,8 @@ int main(void) {
     printf("/dir1 content before delete /dir1/subdir1:\n");
     dir* dir_ptr = sys_opendir("/dir1/");
     char* type = NULL;
-    dir_entry* dir_e = NULL;
-    while((dir_e = sys_readdir(dir_ptr))) { 
+    dir_entry *dir_e = NULL;
+    while ((dir_e = sys_readdir(dir_ptr))) {
         if (dir_e->f_type == FT_REGULAR) {
             type = "regular";
         }

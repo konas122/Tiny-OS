@@ -123,6 +123,9 @@ bool sync_dir_entry(dir *parent_dir, dir_entry *p_de, void *io_buf) {
     int32_t block_bitmap_idx = -1;
 
     block_idx = 0;
+    uint32_t block_bitmap_idx_end = UINT32_MIN;
+    uint32_t block_bitmap_idx_start = UINT32_MAX;
+
     while (block_idx < 140) {
         block_bitmap_idx = -1;
         if (all_blocks[block_idx] == 0) {
@@ -132,10 +135,11 @@ bool sync_dir_entry(dir *parent_dir, dir_entry *p_de, void *io_buf) {
                 return false;
             }
 
-            // 每分配一个块就同步一次 block_bitmap
             block_bitmap_idx = block_lba - cur_part->sb->data_start_lba;
             ASSERT(block_bitmap_idx != -1);
-            bitmap_sync(cur_part, block_bitmap_idx, BLOCK_BITMAP);
+
+            block_bitmap_idx_end = max(block_bitmap_idx_end, (uint32_t)block_bitmap_idx);
+            block_bitmap_idx_start = min(block_bitmap_idx_start, (uint32_t)block_bitmap_idx);
 
             block_bitmap_idx = -1;
             if (block_idx < 12) {       // 直接块
@@ -152,10 +156,11 @@ bool sync_dir_entry(dir *parent_dir, dir_entry *p_de, void *io_buf) {
                     printk("alloc block bitmap for sync_dir_entry failed\n");
                     return false;
                 }
-                // 每分配一个块就同步一次 block_bitmap
                 block_bitmap_idx = block_lba - cur_part->sb->data_start_lba;
                 ASSERT(block_bitmap_idx != -1);
-                bitmap_sync(cur_part, block_bitmap_idx, BLOCK_BITMAP);
+
+                block_bitmap_idx_end = max(block_bitmap_idx_end, (uint32_t)block_bitmap_idx);
+                block_bitmap_idx_start = min(block_bitmap_idx_start, (uint32_t)block_bitmap_idx);
 
                 all_blocks[12] = block_lba;
                 // 把新分配的第 0 个间接块地址写入一级间接块表
@@ -166,6 +171,7 @@ bool sync_dir_entry(dir *parent_dir, dir_entry *p_de, void *io_buf) {
                 // 把新分配的第 (block_idx-12) 个间接块地址写入一级间接块表
                 ide_write(cur_part->my_disk, dir_inode->i_sectors[12], all_blocks + 12, 1);
             }
+            bitmap_sync_multi(cur_part, block_bitmap_idx_start, block_bitmap_idx_end, BLOCK_BITMAP);
 
             // 将新目录项 p_de 写入新分配的间接块
             memset(io_buf, 0, 512);
@@ -251,13 +257,18 @@ bool delete_dir_entry(partition *part, dir *pdir, uint32_t inode_no, void *io_bu
             continue;
         }
 
+        uint32_t block_bitmap_idx_end = UINT32_MIN;
+        uint32_t block_bitmap_idx_start = UINT32_MAX;
+
         // 在此扇区中找到目录项后, 清除该目录项并判断是否回收扇区, 随后退出循环直接返回
         ASSERT(dir_entry_cnt >= 1);
         if (dir_entry_cnt == 1 && !is_dir_first_block) {
             // 在 block_bitmap 中回收该块
             uint32_t block_bitmap_idx = all_blocks[block_idx] - part->sb->data_start_lba;
             bitmap_set(&part->block_bitmap, block_bitmap_idx, 0);
-            bitmap_sync(cur_part, block_bitmap_idx, BLOCK_BITMAP);
+
+            block_bitmap_idx_end = max(block_bitmap_idx_end, block_bitmap_idx);
+            block_bitmap_idx_start = min(block_bitmap_idx_start, block_bitmap_idx);
 
             if (block_idx < 12) {
                 dir_inode->i_sectors[block_idx] = 0;
@@ -279,12 +290,15 @@ bool delete_dir_entry(partition *part, dir *pdir, uint32_t inode_no, void *io_bu
                 else {  // 回收间接索引表所在的块
                     block_bitmap_idx = dir_inode->i_sectors[12] - part->sb->data_start_lba;
                     bitmap_set(&part->block_bitmap, block_bitmap_idx, 0);
-                    bitmap_sync(cur_part, block_bitmap_idx, BLOCK_BITMAP);
+
+                    block_bitmap_idx_end = max(block_bitmap_idx_end, block_bitmap_idx);
+                    block_bitmap_idx_start = min(block_bitmap_idx_start, block_bitmap_idx);
 
                     // 将间接索引表地址清 0
                     dir_inode->i_sectors[12] = 0;
                 }
             }
+            bitmap_sync_multi(cur_part, block_bitmap_idx_start, block_bitmap_idx_end, BLOCK_BITMAP);
         }
         else {  // 仅将该目录项清空
             memset(dir_entry_found, 0, dir_entry_size);
