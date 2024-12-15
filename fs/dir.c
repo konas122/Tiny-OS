@@ -171,7 +171,7 @@ bool sync_dir_entry(dir *parent_dir, dir_entry *p_de, void *io_buf) {
                 // 把新分配的第 (block_idx-12) 个间接块地址写入一级间接块表
                 ide_write(cur_part->my_disk, dir_inode->i_sectors[12], all_blocks + 12, 1);
             }
-            bitmap_sync_multi(cur_part, block_bitmap_idx_start, block_bitmap_idx_end, BLOCK_BITMAP);
+            bitmap_sync_range(cur_part, block_bitmap_idx_start, block_bitmap_idx_end, BLOCK_BITMAP);
 
             // 将新目录项 p_de 写入新分配的间接块
             memset(io_buf, 0, 512);
@@ -298,7 +298,7 @@ bool delete_dir_entry(partition *part, dir *pdir, uint32_t inode_no, void *io_bu
                     dir_inode->i_sectors[12] = 0;
                 }
             }
-            bitmap_sync_multi(cur_part, block_bitmap_idx_start, block_bitmap_idx_end, BLOCK_BITMAP);
+            bitmap_sync_range(cur_part, block_bitmap_idx_start, block_bitmap_idx_end, BLOCK_BITMAP);
         }
         else {  // 仅将该目录项清空
             memset(dir_entry_found, 0, dir_entry_size);

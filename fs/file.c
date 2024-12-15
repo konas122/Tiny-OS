@@ -93,9 +93,9 @@ void bitmap_sync(partition *part, uint32_t bit_idx, uint8_t btmp_type) {
 }
 
 
-void bitmap_sync_multi(partition *part, uint32_t bit_idx_start, uint32_t bit_idx_end, uint8_t btmp_type) {
+void bitmap_sync_range(partition *part, uint32_t bit_idx_start, uint32_t bit_idx_end, uint8_t btmp_type) {
     uint32_t off_sec_start = bit_idx_start / 4096;
-    uint32_t off_sec_end = DIV_ROUND_UP(bit_idx_end, 4096);
+    uint32_t off_sec_end = bit_idx_end/ 4096;
 
     uint32_t off_size = off_sec_start * BLOCK_SIZE;
 
@@ -387,7 +387,7 @@ int32_t file_write(file *file, const void * buf, uint32_t count) {
         }
     }
 
-    bitmap_sync_multi(cur_part, block_bitmap_idx_start, block_bitmap_idx_end, BLOCK_BITMAP);
+    bitmap_sync_range(cur_part, block_bitmap_idx_start, block_bitmap_idx_end, BLOCK_BITMAP);
 
     bool first_write_block = true;
     // 块地址已经收集到 all_blocks 中, 下面开始写数据

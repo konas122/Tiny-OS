@@ -192,7 +192,7 @@ void inode_release(partition *part, uint32_t inode_no) {
     // 回收该 inode 在 inode_bitmap 中所占用 bit
     bitmap_set(&part->inode_bitmap, inode_no, 0);
     bitmap_sync(cur_part, inode_no, INODE_BITMAP);
-    bitmap_sync_multi(cur_part, block_bitmap_idx_start, block_bitmap_idx_end, BLOCK_BITMAP);
+    bitmap_sync_range(cur_part, block_bitmap_idx_start, block_bitmap_idx_end, BLOCK_BITMAP);
 
     void *io_buf = sys_malloc(1024);
     inode_delete(part, inode_no, io_buf);

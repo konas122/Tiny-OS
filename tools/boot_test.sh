@@ -1,11 +1,21 @@
 #!/bin/sh
 
-src_path=.
+src_path=../boot
 work_path=..
 
 if [ -e './boot' -o -e './out' ]; then
     src_path=boot
     work_path=.
+fi
+
+if [ $work_path = . ]; then
+    if [ ! -d out ]; then
+        mkdir out;
+    fi
+else
+    if [ ! -d ../out ]; then
+        mkdir ../out;
+    fi
 fi
 
 nasm -I ${src_path}/include/ -o ${work_path}/out/mbr.bin ${src_path}/mbr.S && \
