@@ -30,7 +30,7 @@ static int32_t copy_pcb_vaddrbitmap_stack0(task_struct *child_thread, task_struc
         return -1;
     }
 
-    memcpy(vaddr_btmp, child_thread->userprog_vaddr.vaddr_bitmap.bits, bitmap_pg_cnt * PG_SIZE);
+    memcpy(vaddr_btmp, parent_thread->userprog_vaddr.vaddr_bitmap.bits, bitmap_pg_cnt * PG_SIZE);
     child_thread->userprog_vaddr.vaddr_bitmap.bits = (uint8_t *)vaddr_btmp;
     ASSERT(strlen(child_thread->name) < 11);    // pcb.name 的长度是 16, 为避免下面 strcat 越界
     strcat(child_thread->name, "_fork");
@@ -77,7 +77,7 @@ static int32_t build_child_stack(task_struct *child_thread) {
     intr_stack *intr_0_stack = (intr_stack *)((uint32_t)child_thread + PG_SIZE - sizeof(intr_stack));
     intr_0_stack->eax = 0;  // 修改子进程的返回值为 0
 
-    //为 switch_to 构建 thread_stack, 将其构建在紧临 intr_stack 之下的空间
+    // 为 switch_to 构建栈帧, 将其构建在紧临 intr_stack 之下的空间
     uint32_t *ret_addr_in_thread_stack = (uint32_t *)intr_0_stack - 1;
 
     uint32_t *esi_ptr_in_thread_stack = (uint32_t *)intr_0_stack - 2;
@@ -91,7 +91,7 @@ static int32_t build_child_stack(task_struct *child_thread) {
     *ebp_ptr_in_thread_stack = *ebx_ptr_in_thread_stack =
         *edi_ptr_in_thread_stack = *esi_ptr_in_thread_stack = 0;
 
-    // 把构建的 thread_stack 的栈顶做为 switch_to 恢复数据时的栈顶
+    // 把构建的 switch_to 栈帧的栈顶做为 switch_to 恢复数据时的栈顶
     child_thread->self_kstack = ebp_ptr_in_thread_stack;	    
     return 0;
 }
@@ -107,7 +107,6 @@ static void update_inode_open_cnts(task_struct *thread) {
         }
         local_fd++;
     }
-    add_cwd(thread->cwd_inode_nr);
 }
 
 
@@ -137,6 +136,8 @@ static int32_t copy_process(task_struct *child_thread, task_struct *parent_threa
 
     // 更新文件 inode 的打开数
     update_inode_open_cnts(child_thread);
+
+    add_cwd(child_thread->cwd_inode_nr);
 
     mfree_page(PF_KERNEL, buf_page, 1);
     return 0;
