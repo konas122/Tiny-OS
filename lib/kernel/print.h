@@ -7,5 +7,6 @@ void put_int(const uint32_t num);     // 以 16 进制打印
 void put_str(const char *message);
 void put_char(const uint8_t char_asci);
 void set_cursor(const uint32_t cursor_pos);
+void cls_screen(void);
 
 #endif

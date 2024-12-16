@@ -221,6 +221,20 @@ void *get_a_page(pool_flags pf, uint32_t vaddr) {
 }
 
 
+void *get_a_page_without_opvaddrbitmap(pool_flags pf, uint32_t vaddr) {
+    pool *mem_pool = pf & PF_KERNEL ? &kernel_pool : &user_pool;
+    lock_acquire(&mem_pool->lock);
+    void *page_phyaddr = palloc(mem_pool);
+    if (page_phyaddr == NULL) {
+        lock_release(&mem_pool->lock);
+        return NULL;
+    }
+    page_table_map((void *)vaddr, page_phyaddr);
+    lock_release(&mem_pool->lock);
+    return (void *)vaddr;
+}
+
+
 uint32_t addr_v2p(uint32_t vaddr) {
     uint32_t *pte = pte_vaddr(vaddr);
     return ((*pte & 0xfffff000) + (vaddr & 0x00000fff));

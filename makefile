@@ -22,7 +22,8 @@ OBJS =	$(BUILD_DIR)/main.o $(BUILD_DIR)/print.o $(BUILD_DIR)/interrupt.o $(BUILD
 		$(BUILD_DIR)/switch.o $(BUILD_DIR)/sync.o $(BUILD_DIR)/console.o $(BUILD_DIR)/keyboard.o \
 		$(BUILD_DIR)/ioqueue.o $(BUILD_DIR)/tss.o $(BUILD_DIR)/process.o $(BUILD_DIR)/syscall.o \
 		$(BUILD_DIR)/syscall_init.o $(BUILD_DIR)/stdio.o $(BUILD_DIR)/stdio_kernel.o \
-		$(BUILD_DIR)/ide.o $(BUILD_DIR)/fs.o $(BUILD_DIR)/dir.o $(BUILD_DIR)/file.o $(BUILD_DIR)/inode.o
+		$(BUILD_DIR)/ide.o $(BUILD_DIR)/fs.o $(BUILD_DIR)/dir.o $(BUILD_DIR)/file.o $(BUILD_DIR)/inode.o \
+		$(BUILD_DIR)/fork.o
 
 
 # ================================================
@@ -122,6 +123,7 @@ $(BUILD_DIR)/sync.o: thread/sync.c
 	@$(CC) $(CFLAGS) $< -o $@
 	@echo "    CC   " $@
 
+
 # ====== User ======
 $(BUILD_DIR)/tss.o: user/tss.c
 	@$(CC) $(CFLAGS) $< -o $@
@@ -132,6 +134,10 @@ $(BUILD_DIR)/process.o: user/process.c
 	@echo "    CC   " $@
 
 $(BUILD_DIR)/syscall_init.o: user/syscall_init.c
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "    CC   " $@
+
+$(BUILD_DIR)/fork.o: user/fork.c
 	@$(CC) $(CFLAGS) $< -o $@
 	@echo "    CC   " $@
 

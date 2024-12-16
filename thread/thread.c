@@ -52,6 +52,11 @@ static pid_t allocate_pid(void) {
 }
 
 
+pid_t fork_pid(void) {
+    return allocate_pid();
+}
+
+
 static void kernel_thread(thread_func* function, void* func_arg) {
     // 执行 function 前要开中断, 避免后面的时钟中断被屏蔽, 而无法调度其它线程
     intr_enable();
@@ -103,6 +108,7 @@ void init_thread(task_struct *pthread, char *name, int prio) {
     }
 
     pthread->cwd_inode_nr = 0;  // 默认工作目录是根目录
+    pthread->parent_pid = -1;
     pthread->stack_magic = 0x19780506;
 }
 

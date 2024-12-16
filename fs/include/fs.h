@@ -72,6 +72,7 @@ void sys_rewinddir(struct dir *dir_ptr);
 
 char *sys_getcwd(char *buf, uint32_t size);
 int32_t sys_chdir(const char *path);
+void add_cwd(uint32_t inode_no);
 
 int32_t sys_stat(const char *path, stat *buf);
 
