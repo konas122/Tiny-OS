@@ -34,8 +34,23 @@ void syscall_init(void) {
     syscall_table[SYS_MALLOC] = (void *)sys_malloc;
     syscall_table[SYS_FREE] = (void *)sys_free;
     syscall_table[SYS_FORK] = (void *)sys_fork;
+    syscall_table[SYS_READ] = (void *)sys_read;
     syscall_table[SYS_PUTCHAR] = (void *)sys_putchar;
     syscall_table[SYS_CLEAR] = (void *)cls_screen;
+    syscall_table[SYS_GETCWD] = (void *)sys_getcwd;
+    syscall_table[SYS_OPEN] = (void *)sys_open;
+    syscall_table[SYS_CLOSE] = (void *)sys_close;
+    syscall_table[SYS_LSEEK] = (void *)sys_lseek;
+    syscall_table[SYS_UNLINK] = (void *)sys_unlink;
+    syscall_table[SYS_MKDIR] = (void *)sys_mkdir;
+    syscall_table[SYS_OPENDIR] = (void *)sys_opendir;
+    syscall_table[SYS_CLOSEDIR] = (void *)sys_closedir;
+    syscall_table[SYS_CHDIR] = (void *)sys_chdir;
+    syscall_table[SYS_RMDIR] = (void *)sys_rmdir;
+    syscall_table[SYS_READDIR] = (void *)sys_readdir;
+    syscall_table[SYS_REWINDDIR] = (void *)sys_rewinddir;
+    syscall_table[SYS_STAT] = (void *)sys_stat;
+    syscall_table[SYS_PS] = (void *)sys_ps;
 
     put_str("syscall_init done\n");
 }

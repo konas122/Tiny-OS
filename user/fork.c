@@ -92,7 +92,7 @@ static int32_t build_child_stack(task_struct *child_thread) {
         *edi_ptr_in_thread_stack = *esi_ptr_in_thread_stack = 0;
 
     // 把构建的 switch_to 栈帧的栈顶做为 switch_to 恢复数据时的栈顶
-    child_thread->self_kstack = ebp_ptr_in_thread_stack;	    
+    child_thread->self_kstack = ebp_ptr_in_thread_stack;
     return 0;
 }
 

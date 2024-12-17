@@ -15,7 +15,7 @@
 
 void init_all() {
     idt_init();     // 初始化中断
-    mem_init();	    // 初始化内存管理系统
+    mem_init();     // 初始化内存管理系统
     thread_init();  // 初始化线程相关结构
     timer_init();   // 初始化 PIT
 

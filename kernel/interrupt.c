@@ -5,9 +5,9 @@
 #include "interrupt.h"
 
 
-#define PIC_M_CTRL 0x20	    // 这里用的可编程中断控制器是 8259A, 主片的控制端口是 0x20
-#define PIC_M_DATA 0x21	    // 主片的数据端口是 0x21
-#define PIC_S_CTRL 0xa0	    // 从片的控制端口是 0xa0
+#define PIC_M_CTRL 0x20     // 这里用的可编程中断控制器是 8259A, 主片的控制端口是 0x20
+#define PIC_M_DATA 0x21     // 主片的数据端口是 0x21
+#define PIC_S_CTRL 0xa0     // 从片的控制端口是 0xa0
 #define PIC_S_DATA 0xa1     // 从片的数据端口是 0xa1
 
 #define IDT_DESC_CNT 0x81   // 目前总共支持的中断数
@@ -35,7 +35,7 @@ intr_handler idt_table[IDT_DESC_CNT];   // 定义中断处理程序数组.
                                         // 在 kernel.S 中定义的 intr_XX_entry 只是中断处理程序的入口,
                                         // 最终调用的是 ide_table 中的处理程序
 
-extern intr_handler intr_entry_table[IDT_DESC_CNT];	    // 声明引用定义在 kernel.S 中的中断处理函数入口数组
+extern intr_handler intr_entry_table[IDT_DESC_CNT]; // 声明引用定义在 kernel.S 中的中断处理函数入口数组
 extern uint32_t syscall_handler(void);
 
 
@@ -48,9 +48,9 @@ static void pic_init(void) {
     outb(PIC_M_DATA, 0x01); // ICW4: 8086 模式, 正常EOI
 
     // 初始化从片
-    outb(PIC_S_CTRL, 0x11);	// ICW1: 边沿触发, 级联 8259, 需要 ICW4
-    outb(PIC_S_DATA, 0x28);	// ICW2: 起始中断向量号为 0x28, 也就是 IR[8-15] 为 0x28-0x2F
-    outb(PIC_S_DATA, 0x02);	// ICW3: 设置从片连接到主片的 IR2 引脚
+    outb(PIC_S_CTRL, 0x11); // ICW1: 边沿触发, 级联 8259, 需要 ICW4
+    outb(PIC_S_DATA, 0x28); // ICW2: 起始中断向量号为 0x28, 也就是 IR[8-15] 为 0x28-0x2F
+    outb(PIC_S_DATA, 0x02); // ICW3: 设置从片连接到主片的 IR2 引脚
     outb(PIC_S_DATA, 0x01); // ICW4: 8086 模式, 正常EOI
 
     // IRQ2 用于级联从片,若不打开将无法响应从片上的中断.

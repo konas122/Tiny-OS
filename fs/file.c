@@ -369,7 +369,7 @@ int32_t file_write(file *file, const void * buf, uint32_t count) {
 
             ide_read(cur_part->my_disk, indirect_block_table, all_blocks + 12, 1); // 获取所有间接块地址
 
-            block_idx = file_has_used_blocks;	  // 第一个未使用的间接块, 即已经使用的间接块的下一块
+            block_idx = file_has_used_blocks;   // 第一个未使用的间接块, 即已经使用的间接块的下一块
             while (block_idx < file_will_use_blocks) {
                 block_lba = block_bitmap_alloc(cur_part);
                 if (block_lba == -1) {

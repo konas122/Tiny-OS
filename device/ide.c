@@ -25,13 +25,13 @@
 
 // reg_alt_status 寄存器的一些关键位
 #define BIT_STAT_BSY    0x80    // 硬盘忙
-#define BIT_STAT_DRDY   0x40    // 驱动器准备好	 
+#define BIT_STAT_DRDY   0x40    // 驱动器准备好
 #define BIT_STAT_DRQ    0x8     // 数据传输准备好了
 
 // device 寄存器的一些关键位
-#define BIT_DEV_MBS	0xa0    // 第 7 位和第 5 位固定为 1
-#define BIT_DEV_LBA	0x40
-#define BIT_DEV_DEV	0x10
+#define BIT_DEV_MBS 0xa0    // 第 7 位和第 5 位固定为 1
+#define BIT_DEV_LBA 0x40
+#define BIT_DEV_DEV 0x10
 
 // 一些硬盘操作的指令
 #define CMD_IDENTIFY        0xec    // identify 指令
@@ -50,7 +50,7 @@ list partition_list;        // 分区队列
 
 
 struct partition_table_entry {
-    uint8_t bootable;       // 是否可引导	
+    uint8_t bootable;       // 是否可引导
     uint8_t start_head;     // 起始磁头号
     uint8_t start_sec;      // 起始扇区号
     uint8_t start_chs;      // 起始柱面号
@@ -315,7 +315,7 @@ static void partition_scan(disk* hd, uint32_t ext_lba) {
             }
         }
         else if (p->fs_type != 0) { // 若是有效的分区类型
-            if (ext_lba == 0) {	    // 此时全是主分区
+            if (ext_lba == 0) {     // 此时全是主分区
                 hd->prim_parts[p_no].start_lba = p->start_lba;
                 hd->prim_parts[p_no].sec_cnt = p->sec_cnt;
                 hd->prim_parts[p_no].my_disk = hd;
@@ -398,7 +398,7 @@ void ide_init() {
         }
 
         channel->expecting_intr = false;    // 未向硬盘写入指令时不期待硬盘的中断
-        lock_init(&channel->lock);		     
+        lock_init(&channel->lock);
 
         // 初始化为0, 目的是向硬盘控制器请求数据后, 硬盘驱动 sem_wait 此信号量会阻塞线程.
         // 直到硬盘完成后通过发中断, 由中断处理程序将此信号量 sem_post, 唤醒线程.

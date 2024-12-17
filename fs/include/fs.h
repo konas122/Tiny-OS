@@ -52,7 +52,8 @@ typedef struct stat {
 extern partition* cur_part;
 
 void fs_init(void);
-int32_t path_depth_cnt(char* pathname);
+int32_t path_depth_cnt(char *pathname);
+char *path_parse(char *pathname, char *name_store);
 
 int32_t sys_close(int32_t fd);
 int32_t sys_open(const char* pathname, uint8_t flags);

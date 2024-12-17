@@ -9,6 +9,8 @@
 #include "process.h"
 #include "interrupt.h"
 
+#include "assert.h"
+#include "shell.h"
 #include "stdio.h"
 #include "syscall.h"
 #include "syscall_init.h"
@@ -26,6 +28,7 @@ int main(void) {
     console_put_int(sys_getpid());
     console_put_str("\n");
 
+    cls_screen();
     process_execute(init, "init");
 
     while(1) {
@@ -35,13 +38,14 @@ int main(void) {
     return 0;
 }
 
+
 void init(void) {
     uint32_t ret_pid = fork();
     if (ret_pid) {
-        printf("I am father, my pid is %d, child pid is %d\n", getpid(), ret_pid);
+        while(1);
     }
     else {
-        printf("I am child, my pid is %d, return pid is %d\n", getpid(), ret_pid);
+        my_shell();
     }
-    while(1);
+    panic("init: should not be here");
 }

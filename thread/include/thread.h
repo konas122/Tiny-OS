@@ -94,6 +94,7 @@ typedef struct task_struct {
 extern list thread_all_list;
 extern list thread_ready_list;
 
+void sys_ps(void);
 pid_t fork_pid(void);
 
 void init_thread(task_struct *pthread, char *name, int prio);

@@ -55,7 +55,7 @@ put_int:
     inc edi
     cmp cl, '0'
     je .skip_prefix_0   ; 继续判断下一位字符是否为字符 '0'
-    dec edi             ; edi 在上面的 inc 操作中指向了下一个字符, 若当前字符不为 '0', 要恢复 edi 指向当前字符		       
+    dec edi             ; edi 在上面的 inc 操作中指向了下一个字符, 若当前字符不为 '0', 要恢复 edi 指向当前字符
     jmp .put_each_num
 
 .full0:
@@ -118,7 +118,7 @@ put_char:
     in al, dx
 
     ; 将光标存入 bx
-    mov bx, ax	  
+    mov bx, ax
 
     ; 下面这行是在栈中获取待打印的字符
     mov ecx, [esp + 36] ; pushad 压入 32 bytes, 加上主调函数的返回地址 4 字节, 故 esp+36 字节
@@ -185,7 +185,7 @@ put_char:
 .set_cursor:
     ; 设置高 8 位
     mov dx, 0x03d4      ; 索引寄存器
-    mov al, 0xe0        ; 用于光标位置的高 8 位
+    mov al, 0x0e        ; 用于光标位置的高 8 位
     out dx, al
     mov dx, 0x03d5
     mov al, bh

@@ -403,7 +403,7 @@ void mfree_page(pool_flags pf, void* _vaddr, uint32_t pg_cnt) {
         vaddr_remove(pf, _vaddr, pg_cnt);
     }
     else {
-        vaddr -= PG_SIZE;	      
+        vaddr -= PG_SIZE;
         while (page_cnt < pg_cnt) {
             vaddr += PG_SIZE;
             pg_phy_addr = addr_v2p(vaddr);

@@ -107,7 +107,7 @@ static char keymap[][2] = {
 
 
 static void intr_keyboard_handler(void) {
-    bool ctrl_down_last = ctrl_status;	  
+    bool ctrl_down_last = ctrl_status;
     bool shift_down_last = shift_status;
     bool caps_lock_last = caps_lock_status;
 
@@ -191,6 +191,9 @@ static void intr_keyboard_handler(void) {
         char cur_char = keymap[index][shift];
 
         if (cur_char) {
+            if (ctrl_down_last && cur_char == 'u') {
+                cur_char -= 'a';    // 删除输入的快捷方式
+            }
             ioq_putchar(&kbd_buf, cur_char);
             return;
         }
@@ -216,6 +219,7 @@ static void intr_keyboard_handler(void) {
 
 void keyboard_init() {
     put_str("\nkeyboard init start\n");
+    ioqueue_init(&kbd_buf);
     register_handler(0x21, intr_keyboard_handler);
     put_str("keyboard init done\n");
 }
