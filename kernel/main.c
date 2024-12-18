@@ -11,9 +11,9 @@
 
 #include "assert.h"
 #include "shell.h"
-#include "stdio.h"
 #include "syscall.h"
 #include "syscall_init.h"
+#include "stdio_kernel.h"
 
 
 void init(void);
@@ -29,11 +29,10 @@ int main(void) {
     console_put_str("\n");
 
     cls_screen();
+
     process_execute(init, "init");
 
-    while(1) {
-        // console_put_str("Main ");
-    };
+    while(1);
 
     return 0;
 }

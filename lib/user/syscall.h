@@ -27,6 +27,7 @@ typedef enum SYSCALL_NR {
     SYS_REWINDDIR,
     SYS_STAT,
     SYS_PS,
+    SYS_EXECV,
 } SYSCALL_NR;
 
 
@@ -55,5 +56,6 @@ void rewinddir(struct dir *dir);
 int32_t file_stat(const char *path, stat *buf);
 int32_t chdir(const char *path);
 void ps(void);
+int execv(const char* pathname, char** argv);
 
 #endif

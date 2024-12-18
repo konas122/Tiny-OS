@@ -13,9 +13,10 @@
 
 #define cmd_len 128     // 最大支持键入 128 个字符的命令行输入
 #define MAX_ARG_NR 16   // 加上命令名外, 最多支持 15 个参数
+#define CWD_CACHE_LEN 64
 
 
-char cwd_cache[64] = {0};               // 当前目录的缓存
+char cwd_cache[CWD_CACHE_LEN] = {0};    // 当前目录的缓存
 char final_path[MAX_PATH_LEN] = {0};    // 用于洗路径时的缓冲
 static char cmd_line[cmd_len] = {0};    // 存储输入的命令
 
@@ -132,7 +133,7 @@ void my_shell(void) {
         }
         else if (!strcmp("cd", argv[0])) {
             if (buildin_cd(argc, argv) != NULL) {
-                memset(cwd_cache, 0, 64);
+                memset(cwd_cache, 0, CWD_CACHE_LEN);
                 strcpy(cwd_cache, final_path);
             }
         }
@@ -156,7 +157,21 @@ void my_shell(void) {
             buildin_rm(argc, argv);
         }
         else {
-            printf("external command\n");
+            make_clear_abs_path(argv[0], final_path);
+            argv[0] = final_path;
+            stat _stat;
+            memset(&_stat, 0, sizeof(stat));
+            if (file_stat(argv[0], &_stat) == -1) {
+                printf("my_shell: cannot access %s: No such file or directory\n", argv[0]);
+            }
+            else {
+                execv(argv[0], argv);
+            }
+            while(1);
+        }
+
+        for (uint32_t i = 0; i < MAX_ARG_NR; ++i) {
+            argv[i] = NULL;
         }
 
         printf("\n");

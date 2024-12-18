@@ -61,7 +61,9 @@ void lock_acquire(lock *plock) {
 
 
 void lock_release(lock *plock) {
+#ifndef NDEBUG
     task_struct *cur = running_thread();
+#endif
     ASSERT(plock->holder == cur);
     if (plock->holder_repeat_nr > 1) {
         plock->holder_repeat_nr--;

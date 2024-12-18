@@ -1,5 +1,6 @@
 #include "fs.h"
 #include "fork.h"
+#include "exec.h"
 #include "print.h"
 #include "stdint.h"
 #include "string.h"
@@ -51,6 +52,7 @@ void syscall_init(void) {
     syscall_table[SYS_REWINDDIR] = (void *)sys_rewinddir;
     syscall_table[SYS_STAT] = (void *)sys_stat;
     syscall_table[SYS_PS] = (void *)sys_ps;
+    syscall_table[SYS_EXECV] = (void *)sys_execv;
 
     put_str("syscall_init done\n");
 }

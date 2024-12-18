@@ -103,7 +103,11 @@ void create_dir_entry(char* filename, uint32_t inode_no, uint8_t file_type, dir_
 
 bool sync_dir_entry(dir *parent_dir, dir_entry *p_de, void *io_buf) {
     inode* dir_inode = parent_dir->inode;
+
+#ifndef NDEBUG
     uint32_t dir_size = dir_inode->i_size;
+#endif
+
     uint32_t dir_entry_size = cur_part->sb->dir_entry_size;
 
     ASSERT((dir_size % dir_entry_size) == 0);

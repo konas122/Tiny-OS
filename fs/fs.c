@@ -252,7 +252,9 @@ static int search_file(const char* pathname, path_search_record* searched_record
         return 0;
     }
 
+#ifndef NDEBUG
     uint32_t path_len = strlen(pathname);
+#endif
 
     ASSERT(pathname[0] == '/' && path_len > 1 && path_len < MAX_PATH_LEN);
 
