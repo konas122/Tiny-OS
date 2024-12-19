@@ -407,7 +407,10 @@ int32_t file_write(file *file, const void * buf, uint32_t count) {
         }
         memcpy(io_buf + sec_off_bytes, src, chunk_size);
         ide_write(cur_part->my_disk, sec_lba, io_buf, 1);
-        printk("file write at lba 0x%x\n", sec_lba);    //调试,完成后去掉
+
+#ifdef DEBUG_INFO
+        printk("file write at lba 0x%x\n", sec_lba);
+#endif
 
         src += chunk_size;
         file->fd_inode->i_size += chunk_size;   // 更新文件大小

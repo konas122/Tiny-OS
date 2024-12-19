@@ -31,7 +31,7 @@ int main(void) {
 
     cls_screen();
 
-    uint32_t file_size = 24576; 
+    uint32_t file_size = 21828; 
     uint32_t sec_cnt = DIV_ROUND_UP(file_size, 512);
     disk *sda = &channels[0].devices[0];
     void *prog_buf = sys_malloc(file_size);

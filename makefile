@@ -1,10 +1,14 @@
 BUILD_DIR = ./out
+BUILD_LIB_DIR = $(BUILD_DIR)/lib
 ENTRY_POINT = 0xc0001500
 
+AR = ar
 AS = nasm
 CC = gcc
 LD = ld
 
+
+ARFLAGS = rcs
 
 ASLIB = -I boot/include/
 ASFLAGS = -f elf32
@@ -16,6 +20,9 @@ CFLAGS = -Wall -fno-builtin -Wstrict-prototypes -Wmissing-prototypes -fno-stack-
 		$(CLIB) -c -W -m32 -g
 
 LDFLAGS = -Ttext $(ENTRY_POINT) -m elf_i386 -e main -Map $(BUILD_DIR)/kernel.map -z noexecstack
+
+CLIB_OBJS = $(BUILD_LIB_DIR)/stdio.o $(BUILD_LIB_DIR)/string.o \
+            $(BUILD_LIB_DIR)/start.o $(BUILD_LIB_DIR)/syscall.o
 
 OBJS =	$(BUILD_DIR)/main.o $(BUILD_DIR)/print.o $(BUILD_DIR)/interrupt.o $(BUILD_DIR)/init.o \
 		$(BUILD_DIR)/kernel.o $(BUILD_DIR)/timer.o $(BUILD_DIR)/debug.o $(BUILD_DIR)/string.o \
@@ -197,12 +204,35 @@ $(BUILD_DIR)/kernel.bin: $(OBJS)
 
 
 # ================================================
+$(BUILD_LIB_DIR)/stdio.o: lib/stdio.c
+	@$(CC) $(CFLAGS) -DNDEBUG $< -o $@
+	@echo "    CC   " $@
 
-.PHONY : mk_dir hd clean all
+$(BUILD_LIB_DIR)/string.o: lib/string.c
+	@$(CC) $(CFLAGS) -DNDEBUG $< -o $@
+	@echo "    CC   " $@
+
+$(BUILD_LIB_DIR)/syscall.o: lib/user/syscall.c
+	@$(CC) $(CFLAGS) -DNDEBUG $< -o $@
+	@echo "    CC   " $@
+
+$(BUILD_LIB_DIR)/start.o: shell/command/start.S
+	@$(AS) $(ASFLAGS) $< -o $@
+	@echo "    AS   " $@
+
+$(BUILD_LIB_DIR)/clib.a: $(CLIB_OBJS)
+	@$(AR) $(ARFLAGS) $@ $^
+	@echo "    AR   " $@
+	@echo
+
+
+# ================================================
+
+.PHONY : mk_dir hd clean lib all
 
 mk_dir:
-	@echo
-	if [ ! -d $(BUILD_DIR) ]; then mkdir $(BUILD_DIR); fi
+	@if [ ! -d $(BUILD_DIR) ]; then mkdir $(BUILD_DIR); fi
+	@if [ ! -d $(BUILD_LIB_DIR) ]; then mkdir $(BUILD_LIB_DIR); fi
 
 hd:
 	@echo
@@ -217,4 +247,8 @@ clean:
 
 build: $(BUILD_DIR)/mbr.bin $(BUILD_DIR)/loader.bin $(BUILD_DIR)/kernel.bin
 
-all: mk_dir clean build hd
+crt: $(BUILD_LIB_DIR)/clib.a
+
+lib: mk_dir crt
+
+all: clean mk_dir crt build hd

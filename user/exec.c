@@ -7,6 +7,7 @@
 
 #include "exec.h"
 
+#define MAX_ARG_NR 16   // 加上命令名外, 最多支持 15 个参数
 
 extern void intr_exit(void);
 
@@ -160,7 +161,7 @@ done:
 
 int32_t sys_execv(const char* path, const char* argv[]) {
     uint32_t argc = 0;
-    while (argv[argc]) {
+    while (argc < MAX_ARG_NR && argv[argc]) {
         argc++;
     }
 

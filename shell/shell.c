@@ -107,7 +107,7 @@ static int32_t cmd_parse(char* cmd_str, char** argv, char token) {
 
 
 int32_t argc = -1;
-char *argv[MAX_ARG_NR];
+char *argv[MAX_ARG_NR] = {0};
 
 
 void my_shell(void) {
