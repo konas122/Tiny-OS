@@ -9,9 +9,9 @@
 #include "process.h"
 #include "interrupt.h"
 
-#include "assert.h"
 #include "shell.h"
 #include "stdio.h"
+#include "assert.h"
 #include "syscall.h"
 #include "syscall_init.h"
 #include "stdio_kernel.h"
@@ -43,6 +43,7 @@ int main(void) {
             while(1);
         }
     }
+    sys_close(fd);
 
     process_execute(init, "init");
 

@@ -1,8 +1,6 @@
 #ifndef __LIB_USER_ASSERT_H__
 #define __LIB_USER_ASSERT_H__
 
-#define NULL 0
-
 
 void user_spin(char* filename, int line, const char* func, const char* condition);
 
