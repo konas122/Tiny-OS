@@ -32,8 +32,8 @@ static int32_t copy_pcb_vaddrbitmap_stack0(task_struct *child_thread, task_struc
 
     memcpy(vaddr_btmp, parent_thread->userprog_vaddr.vaddr_bitmap.bits, bitmap_pg_cnt * PG_SIZE);
     child_thread->userprog_vaddr.vaddr_bitmap.bits = (uint8_t *)vaddr_btmp;
-    ASSERT(strlen(child_thread->name) < 11);    // pcb.name 的长度是 16, 为避免下面 strcat 越界
-    strcat(child_thread->name, "_fork");
+    ASSERT(strlen(child_thread->name) < 15);    // pcb.name 的长度是 16, 为避免下面 strcat 越界
+    strcat(child_thread->name, "f");
     return 0;
 }
 

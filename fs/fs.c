@@ -46,6 +46,10 @@ static bool mount_partition(list_elem *pelem, int arg) {
     disk* hd = cur_part->my_disk;
 
     super_block *sb_buf = (super_block *)sys_malloc(SECTOR_SIZE);
+    if (sb_buf == NULL) {
+        PANIC("alloc memory failed!");
+    }
+
     cur_part->sb = (super_block *)sys_malloc(sizeof(super_block));
     if (cur_part->sb == NULL) {
         PANIC("alloc memory failed!");
@@ -75,6 +79,7 @@ static bool mount_partition(list_elem *pelem, int arg) {
     list_init(&cur_part->cwd_dirs);
 
     printk("mount %s done!\n", part->name);
+    sys_free(sb_buf);
 
     return true;
 }
@@ -848,6 +853,10 @@ int32_t sys_chdir(const char *path) {
                 }
             }
             cwd_dir *new_cwd = (cwd_dir *)sys_malloc(sizeof(cwd_dir));
+            if (new_cwd == NULL) {
+                PANIC("alloc memory failed!");
+            }
+
             new_cwd->inode_no = inode_no;
             list_push(&cur_part->cwd_dirs, &new_cwd->cwd_tag);
         }
@@ -864,7 +873,12 @@ void add_cwd(uint32_t inode_no) {
     if (inode_no <= 0) {
         return;
     }
+
     cwd_dir *new_cwd = (cwd_dir *)sys_malloc(sizeof(cwd_dir));
+    if (new_cwd == NULL) {
+        PANIC("alloc memory failed!");
+    }
+
     new_cwd->inode_no = inode_no;
     list_push(&cur_part->cwd_dirs, &new_cwd->cwd_tag);
 }
@@ -902,10 +916,10 @@ void fs_init() {
 
     // sb_buf 用来存储从硬盘上读入的超级块
     super_block* sb_buf = (super_block*)sys_malloc(SECTOR_SIZE);
-
     if (sb_buf == NULL) {
         PANIC("alloc memory failed!");
     }
+
     printk("\nsearching filesystem...\n");
     while (channel_no < channel_cnt) {
         dev_no = 0;

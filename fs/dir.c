@@ -50,6 +50,11 @@ bool search_dir_entry(partition *part, dir *pdir, const char *name, dir_entry *d
     }
 
     uint8_t *buf = (uint8_t *)sys_malloc(SECTOR_SIZE);
+    if (buf == NULL) {
+        printk("search_dir_entry: sys_malloc for buf failed");
+        return false;
+    }
+
     dir_entry *p_de = (dir_entry *)buf;
     uint32_t dir_entry_size = part->sb->dir_entry_size;
     uint32_t dir_entry_cnt = SECTOR_SIZE / dir_entry_size;  // 1 扇区内可容纳的目录项个数

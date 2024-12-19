@@ -130,6 +130,7 @@ int32_t file_create(dir *parent_dir, char *filename, uint8_t flag) {
     int32_t inode_no = inode_bitmap_alloc(cur_part);
     if (inode_no == -1) {
         printk("in file_creat: allocate inode failed\n");
+        sys_free(io_buf);
         return -1;
     }
 
@@ -248,6 +249,7 @@ int32_t file_write(file *file, const void * buf, uint32_t count) {
     uint32_t* all_blocks = (uint32_t*)sys_malloc(BLOCK_SIZE + 48);  // 用来记录文件所有的块地址
     if (all_blocks == NULL) {
         printk("file_write: sys_malloc for all_blocks failed\n");
+        sys_free(io_buf);
         return -1;
     }
 
@@ -445,6 +447,7 @@ int32_t file_read(file* file, void* buf, uint32_t count) {
     uint32_t* all_blocks = (uint32_t*)sys_malloc(BLOCK_SIZE + 48);
     if (all_blocks == NULL) {
         printk("file_read: sys_malloc for all_blocks failed\n");
+        sys_free(io_buf);
         return -1;
     }
 

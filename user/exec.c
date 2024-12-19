@@ -3,6 +3,7 @@
 #include "string.h"
 #include "global.h"
 #include "memory.h"
+#include "wait_exit.h"
 #include "stdio_kernel.h"
 
 #include "exec.h"
@@ -167,6 +168,7 @@ int32_t sys_execv(const char* path, const char* argv[]) {
 
     int32_t entry_point = load(path);
     if (entry_point == -1) {
+        sys_exit(-1);
         return -1;
     }
 

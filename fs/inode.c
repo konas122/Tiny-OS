@@ -97,10 +97,18 @@ inode *inode_open(partition *part, uint32_t inode_no) {
     char *inode_buf;
     if (inode_pos.two_sec) {
         inode_buf = (char *)sys_malloc(1024);
+        if (inode_buf == NULL) {
+            PANIC("alloc memory failed!");
+        }
+
         ide_read(part->my_disk, inode_pos.sec_lba, inode_buf, 2);
     }
     else {
         inode_buf = (char *)sys_malloc(512);
+        if (inode_buf == NULL) {
+            PANIC("alloc memory failed!");
+        }
+
         ide_read(part->my_disk, inode_pos.sec_lba, inode_buf, 1);
     }
     memcpy(inode_found, inode_buf + inode_pos.off_size, sizeof(inode));
@@ -195,6 +203,10 @@ void inode_release(partition *part, uint32_t inode_no) {
     bitmap_sync_range(cur_part, block_bitmap_idx_start, block_bitmap_idx_end, BLOCK_BITMAP);
 
     void *io_buf = sys_malloc(1024);
+    if (io_buf == NULL) {
+        PANIC("alloc memory failed!");
+    }
+
     inode_delete(part, inode_no, io_buf);
     sys_free(io_buf);
 
