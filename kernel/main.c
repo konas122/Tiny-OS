@@ -38,7 +38,8 @@ int main(void) {
     ide_read(sda, 300, prog_buf, sec_cnt);
     int32_t fd = sys_open("/prog", O_CREAT | O_RDWR);
     if (fd != -1) {
-        if(sys_write(fd, prog_buf, file_size) == -1) {
+        if (sys_write(fd, prog_buf, file_size) == -1) {
+            sys_close(fd);
             printk("file write error!\n");
             while(1);
         }

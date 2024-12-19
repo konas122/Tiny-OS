@@ -70,6 +70,7 @@ int main(void) {
         sys_close(fd);
         printf("%d closed now\n", fd);
     }
+    sys_close(fd);
 
     printf("__________________________________________\n");
     printf("/dir1 content before delete /dir1/subdir1:\n");
