@@ -11,6 +11,7 @@
 
 #include "assert.h"
 #include "shell.h"
+#include "stdio.h"
 #include "syscall.h"
 #include "syscall_init.h"
 #include "stdio_kernel.h"
@@ -30,6 +31,19 @@ int main(void) {
 
     cls_screen();
 
+    uint32_t file_size = 24576; 
+    uint32_t sec_cnt = DIV_ROUND_UP(file_size, 512);
+    disk *sda = &channels[0].devices[0];
+    void *prog_buf = sys_malloc(file_size);
+    ide_read(sda, 300, prog_buf, sec_cnt);
+    int32_t fd = sys_open("/prog", O_CREAT | O_RDWR);
+    if (fd != -1) {
+        if(sys_write(fd, prog_buf, file_size) == -1) {
+            printk("file write error!\n");
+            while(1);
+        }
+    }
+
     process_execute(init, "init");
 
     while(1);
@@ -41,7 +55,12 @@ int main(void) {
 void init(void) {
     uint32_t ret_pid = fork();
     if (ret_pid) {
-        while(1);
+        int status;
+        int child_pid;
+        while(1) {
+            child_pid = wait(&status);
+            printf("I`m init, My pid is 1, I recieve a child, It`s pid is %d, status is %d\n", child_pid, status);
+        }
     }
     else {
         my_shell();

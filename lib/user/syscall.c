@@ -177,3 +177,13 @@ void ps(void) {
 int execv(const char* pathname, char** argv) {
    return _syscall2(SYS_EXECV, pathname, argv);
 }
+
+
+void exit(int32_t status) {
+    _syscall1(SYS_EXIT, status);
+}
+
+
+pid_t wait(int32_t* status) {
+    return _syscall1(SYS_WAIT, status);
+}

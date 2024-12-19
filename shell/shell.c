@@ -156,18 +156,29 @@ void my_shell(void) {
         else if (!strcmp("rm", argv[0])) {
             buildin_rm(argc, argv);
         }
+        // 如果是外部命令, 需要从磁盘上加载
         else {
-            make_clear_abs_path(argv[0], final_path);
-            argv[0] = final_path;
-            stat _stat;
-            memset(&_stat, 0, sizeof(stat));
-            if (file_stat(argv[0], &_stat) == -1) {
-                printf("my_shell: cannot access %s: No such file or directory\n", argv[0]);
+            int32_t pid = fork();
+            if (pid) {  // parent
+                int32_t status;
+                int32_t child_pid = wait(&status);
+                if (unlikely( child_pid == -1 )) {
+                    panic("my_shell: no child\n");
+                }
+                printf("child_pid %d, it's status: %d\n", child_pid, status);
             }
-            else {
-                execv(argv[0], argv);
+            else {      // child
+                make_clear_abs_path(argv[0], final_path);
+                argv[0] = final_path;
+                stat _stat;
+                memset(&_stat, 0, sizeof(stat));
+                if (file_stat(argv[0], &_stat) == -1) {
+                    printf("my_shell: cannot access %s: No such file or directory\n", argv[0]);
+                }
+                else {
+                    execv(argv[0], argv);
+                }
             }
-            while(1);
         }
 
         for (uint32_t i = 0; i < MAX_ARG_NR; ++i) {

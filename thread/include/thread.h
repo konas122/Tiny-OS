@@ -87,7 +87,8 @@ typedef struct task_struct {
     mem_block_desc u_block_desc[DESC_CNT];
 
     uint32_t cwd_inode_nr;  // 进程所在的工作目录的 inode 编号
-    int16_t parent_pid;     // 父进程 pid
+    pid_t parent_pid;       // 父进程 pid
+    uint8_t exit_status;    // 返回值
     uint32_t stack_magic;   // 用这串数字做栈的边界标记, 用于检测栈的溢出
 } task_struct;
 
@@ -110,5 +111,8 @@ void thread_block(task_status stat);
 void thread_unblock(task_struct *pthread);
 void thread_yield(void);
 
+void thread_exit(task_struct *thread_over, bool need_schedule);
+task_struct* pid2thread(pid_t pid);
+void release_pid(pid_t pid);
 
 #endif

@@ -53,6 +53,7 @@ void *get_user_pages(uint32_t pg_cnt);
 // 将地址 vaddr 与 pf 池中的物理地址关联, 仅支持一页空间分配
 void *get_a_page(pool_flags pf, uint32_t vaddr);
 void *get_a_page_without_opvaddrbitmap(pool_flags pf, uint32_t vaddr);
+void free_a_phy_page(uint32_t pg_phy_addr);
 
 uint32_t addr_v2p(uint32_t vaddr);
 
@@ -61,4 +62,4 @@ uint32_t *pte_vaddr(uint32_t vaddr);
 uint32_t *pde_vaddr(uint32_t vaddr);
 
 
-#endif // !__KERNEL_MEMORY_H__
+#endif

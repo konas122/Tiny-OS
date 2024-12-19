@@ -7,6 +7,7 @@
 #include "thread.h"
 #include "console.h"
 #include "syscall.h"
+#include "wait_exit.h"
 
 #include "syscall_init.h"
 
@@ -53,6 +54,8 @@ void syscall_init(void) {
     syscall_table[SYS_STAT] = (void *)sys_stat;
     syscall_table[SYS_PS] = (void *)sys_ps;
     syscall_table[SYS_EXECV] = (void *)sys_execv;
+    syscall_table[SYS_EXIT] = (void *)sys_exit;
+    syscall_table[SYS_WAIT] = (void *)sys_wait;
 
     put_str("syscall_init done\n");
 }

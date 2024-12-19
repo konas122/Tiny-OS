@@ -16,8 +16,8 @@ if [[ $cwd = "tools" ]]; then
     build_dir=../out
 fi
 
-BIN="prog_no_arg"
-SRC=$src_path/$BIN
+BIN="prog"
+SRC=$src_path/prog_no_arg
 CFLAGS="-Wall -fno-builtin -Wstrict-prototypes -Wmissing-prototypes \
         -fno-stack-protector -o0 -m32 -c -g"
 
@@ -29,7 +29,7 @@ DD_OUT="${img_path}/hd60M.img"
 gcc -I $LIB $CFLAGS -o "$build_dir/$BIN.o" $SRC".c"
 nasm -f elf32 $src_path/start.S -o $build_dir/start.o
 ar rcs "$build_dir/simple_crt.a" $OBJS $build_dir/start.o
-ld -m elf_i386 -e main -z noexecstack $build_dir/$BIN".o" "$build_dir/simple_crt.a" -o $build_dir/$BIN
+ld -m elf_i386 -z noexecstack $build_dir/$BIN".o" "$build_dir/simple_crt.a" -o $build_dir/$BIN
 
 SEC_CNT=$(ls -l $DD_IN|awk '{printf("%d", ($5+511)/512)}')
 
