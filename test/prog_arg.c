@@ -21,6 +21,10 @@ int main(int argc, char** argv) {
         while(delay--);
         printf("\nI'm father prog, my pid: %d, I will show process list\n", getpid()); 
         ps();
+
+        int ret;
+        int pid = wait(&ret);
+        printf("child %d return: %d\n", pid, ret);
     }
     else {
         char abs_path[512] = {0};
