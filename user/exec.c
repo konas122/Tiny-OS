@@ -128,7 +128,6 @@ static int32_t load(const char *pathname) {
     Elf32_Half prog_header_size = elf_header.e_phentsize;
 
     // 遍历所有程序头
-
     for (uint32_t prog_idx = 0; prog_idx < elf_header.e_phnum; ++prog_idx) {
         memset(&prog_header, 0, prog_header_size);
         
