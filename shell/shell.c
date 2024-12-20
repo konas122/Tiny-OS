@@ -53,6 +53,14 @@ static void readline(char* buf, int32_t count) {
             }
             break;
 
+        // ctrl+l 屏幕清空
+        case 'l' - 'a':
+            *pos = 0;
+            clear();
+            print_prompt();
+            printf("%s", buf);
+            break;
+
         // 非控制键则输出字符
         default:
             putchar(*pos);
@@ -106,6 +114,69 @@ static int32_t cmd_parse(char* cmd_str, char** argv, char token) {
 }
 
 
+static void cmd_execute(uint32_t argc, char **argv) {
+    if (!strcmp("ls", argv[0])) {
+        buildin_ls(argc, argv);
+    }
+    else if (!strcmp("cd", argv[0])) {
+        if (buildin_cd(argc, argv) != NULL) {
+            memset(cwd_cache, 0, CWD_CACHE_LEN);
+            strcpy(cwd_cache, final_path);
+        }
+    }
+    else if (!strcmp("pwd", argv[0])) {
+        buildin_pwd(argc, argv);
+    }
+    else if (!strcmp("ps", argv[0])) {
+        buildin_ps(argc, argv);
+    }
+    else if (!strcmp("clear", argv[0])) {
+        buildin_clear(argc, argv);
+        return;
+    }
+    else if (!strcmp("mkdir", argv[0])){
+        buildin_mkdir(argc, argv);
+    }
+    else if (!strcmp("rmdir", argv[0])){
+        buildin_rmdir(argc, argv);
+    }
+    else if (!strcmp("help", argv[0])) {
+        help();
+    }
+    else if (!strcmp("rm", argv[0])) {
+        buildin_rm(argc, argv);
+    }
+    // 如果是外部命令, 需要从磁盘上加载
+    else {
+        int32_t pid = fork();
+        if (pid) {  // parent
+            int32_t status;
+            int32_t child_pid = wait(&status);
+            if (unlikely( child_pid == -1 )) {
+                panic("my_shell: no child\n");
+            }
+            printf("child_pid %d, it's status: %d\n", child_pid, status);
+        }
+        else {      // child
+            make_clear_abs_path(argv[0], final_path);
+            argv[0] = final_path;
+            stat _stat;
+            memset(&_stat, 0, sizeof(stat));
+            if (file_stat(argv[0], &_stat) == -1) {
+                printf("my_shell: cannot access %s: No such file or directory\n", argv[0]);
+            }
+            else if (_stat.st_filetype != FT_REGULAR) {
+                printf("my_shell: %s is not a regular file\n", argv[0]);
+            }
+            else {
+                execv(argv[0], argv);
+            }
+        }
+    }
+    printf("\n");
+}
+
+
 int32_t argc = -1;
 char *argv[MAX_ARG_NR] = {0};
 
@@ -117,75 +188,66 @@ void my_shell(void) {
         memset(cmd_line, 0, cmd_len);
         memset(final_path, 0, MAX_PATH_LEN);
         readline(cmd_line, cmd_len);
+
         if (cmd_line[0] == 0) {
             continue;
         }
 
-        argc = -1;
-        argc = cmd_parse(cmd_line, argv, ' ');
-        if (argc == -1) {
-            printf("num of arguments exceed %d\n", MAX_ARG_NR);
-            continue;
-        }
+        // 针对管道的处理
+        char *pipe_symbol = strchr(cmd_line, '|');
+        if (pipe_symbol) {
+            // 生成管道
+            int32_t fd[2] = {-1};
+            pipe(fd);
+            fd_redirect(1, fd[1]);  // 将标准输出重定向到 fd[1]
 
-        if (!strcmp("ls", argv[0])) {
-            buildin_ls(argc, argv);
-        }
-        else if (!strcmp("cd", argv[0])) {
-            if (buildin_cd(argc, argv) != NULL) {
-                memset(cwd_cache, 0, CWD_CACHE_LEN);
-                strcpy(cwd_cache, final_path);
+            char *each_cmd = cmd_line;
+            pipe_symbol = strchr(each_cmd, '|');
+            *pipe_symbol = 0;
+
+            // 执行第一个命令, 命令的输出会写入环形缓冲区
+            argc = -1;
+            argc = cmd_parse(each_cmd, argv, ' ');
+            cmd_execute(argc, argv);
+
+            each_cmd = pipe_symbol + 1;
+            fd_redirect(0, fd[0]);  // 将标准输入重定向到 fd[0]
+
+            while ((pipe_symbol = strchr(each_cmd, '|'))) {
+                *pipe_symbol = 0;
+                argc = -1;
+                argc = cmd_parse(each_cmd, argv, ' ');
+                cmd_execute(argc, argv);
+                each_cmd = pipe_symbol + 1;
             }
+
+            fd_redirect(1, 1);  // 将标准输出恢复屏幕
+
+            // 执行最后一个命令
+            argc = -1;
+            argc = cmd_parse(each_cmd, argv, ' ');
+            cmd_execute(argc, argv);
+
+            fd_redirect(0, 0);  // 将标准输入恢复为键盘
+
+            // close pipe
+            close(fd[0]);
+            close(fd[1]);
         }
-        else if (!strcmp("pwd", argv[0])) {
-            buildin_pwd(argc, argv);
-        }
-        else if (!strcmp("ps", argv[0])) {
-            buildin_ps(argc, argv);
-        }
-        else if (!strcmp("clear", argv[0])) {
-            buildin_clear(argc, argv);
-            continue;
-        }
-        else if (!strcmp("mkdir", argv[0])){
-            buildin_mkdir(argc, argv);
-        }
-        else if (!strcmp("rmdir", argv[0])){
-            buildin_rmdir(argc, argv);
-        }
-        else if (!strcmp("rm", argv[0])) {
-            buildin_rm(argc, argv);
-        }
-        // 如果是外部命令, 需要从磁盘上加载
         else {
-            int32_t pid = fork();
-            if (pid) {  // parent
-                int32_t status;
-                int32_t child_pid = wait(&status);
-                if (unlikely( child_pid == -1 )) {
-                    panic("my_shell: no child\n");
-                }
-                printf("child_pid %d, it's status: %d\n", child_pid, status);
+            argc = -1;
+            argc = cmd_parse(cmd_line, argv, ' ');
+            if (argc == -1) {
+                printf("num of arguments exceed %d\n", MAX_ARG_NR);
+                continue;
             }
-            else {      // child
-                make_clear_abs_path(argv[0], final_path);
-                argv[0] = final_path;
-                stat _stat;
-                memset(&_stat, 0, sizeof(stat));
-                if (file_stat(argv[0], &_stat) == -1) {
-                    printf("my_shell: cannot access %s: No such file or directory\n", argv[0]);
-                }
-                else {
-                    execv(argv[0], argv);
-                }
-            }
+            cmd_execute(argc, argv);
         }
 
         for (uint32_t i = 0; i < MAX_ARG_NR; ++i) {
             argv[i] = NULL;
         }
 
-        printf("\n");
     }
     panic("my_shell: should not be here");
 }

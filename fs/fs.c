@@ -2,6 +2,7 @@
 #include "dir.h"
 #include "list.h"
 #include "file.h"
+#include "pipe.h"
 #include "inode.h"
 #include "debug.h"
 #include "global.h"
@@ -386,7 +387,7 @@ int32_t sys_open(const char* pathname, uint8_t flags) {
 
 
 // 将文件描述符转化为文件表的下标
-static uint32_t fd_local2global(uint32_t local_fd) {
+uint32_t fd_local2global(uint32_t local_fd) {
     task_struct *cur = running_thread();
     int32_t global_fd = cur->fd_table[local_fd];
     ASSERT(global_fd >= 0 && global_fd < MAX_FILE_OPEN);
@@ -398,7 +399,17 @@ int32_t sys_close(int32_t fd) {
     int32_t ret = -1;
     if (fd > 2) {
         uint32_t _fd = fd_local2global(fd);
-        ret = file_close(&file_table[_fd]);
+
+        if (is_pipe(fd)) {
+            if (--file_table[_fd].fd_pos == 0) {
+                mfree_page(PF_KERNEL, file_table[_fd].fd_inode, 1);
+                file_table[_fd].fd_inode = NULL;
+            }
+        }
+        else {
+            ret = file_close(&file_table[_fd]);
+        }
+
         task_struct *cur = running_thread();
         cur->fd_table[fd] = -1;
     }
@@ -417,6 +428,10 @@ int32_t sys_write(int32_t fd, const void* buf, uint32_t count) {
         console_put_str(tmp_buf);
         return count;
     }
+    else if (is_pipe(fd)) {
+        return pipe_write(fd, buf, count);
+    }
+
     uint32_t _fd = fd_local2global(fd);
     file* wr_file = &file_table[_fd];
     if (wr_file->fd_flag & O_WRONLY || wr_file->fd_flag & O_RDWR) {
@@ -438,14 +453,23 @@ int32_t sys_read(int32_t fd, void *buf, uint32_t count) {
         return -1;
     }
     else if (fd == stdin_no) {
-        char *buffer = (char *)buf;
-        uint32_t bytes_read = 0;
-        while (bytes_read < count) {
-            *buffer = ioq_getchar(&kbd_buf);
-            bytes_read++;
-            buffer++;
+        // 标准输入有可能被重定向为管道缓冲区
+        if (is_pipe(fd)) {
+            ret = pipe_read(fd, buf, count);
         }
-        ret = (bytes_read == 0 ? -1 : (int32_t)bytes_read);
+        else {
+            char *buffer = (char *)buf;
+            uint32_t bytes_read = 0;
+            while (bytes_read < count) {
+                *buffer = ioq_getchar(&kbd_buf);
+                bytes_read++;
+                buffer++;
+            }
+            ret = (bytes_read == 0 ? -1 : (int32_t)bytes_read);
+        }
+    }
+    else if (is_pipe(fd)) {
+        ret = pipe_read(fd, buf, count);
     }
     else {
         uint32_t _fd = fd_local2global(fd);
@@ -564,7 +588,7 @@ int32_t sys_mkdir(const char *pathname) {
 
         // 先判断是否把 pathname 的各层目录都访问到了, 即是否在某个中间目录就失败了
         if (pathname_depth != path_searched_depth) {    // 说明并没有访问到全部的路径, 某个中间目录是不存在的
-            printk("sys_mkdir: can`t access %s, subpath %s is`t exist\n", pathname, searched_record.searched_path);
+            printk("sys_mkdir: can't access %s, subpath %s is not exist\n", pathname, searched_record.searched_path);
             rollback_step = 1;
             goto rollback;
         }

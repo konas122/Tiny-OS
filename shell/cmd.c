@@ -124,7 +124,7 @@ void buildin_ls(uint32_t argc, char** argv) {
                 return;
             }
             else {
-                printf("ls: invalid option %s\nTry `ls -h' for more information.\n", argv[arg_idx]);
+                printf("ls: invalid option %s\nTry `ls -h` for more information.\n", argv[arg_idx]);
                 return;
             }
         }

@@ -217,7 +217,7 @@ int32_t file_open(uint32_t inode_no, uint8_t flag) {
         }
         else {
             intr_set_status(old_status);
-            printk("file can`t be write now, try again later\n");
+            printk("file can't be write now, try again later\n");
             return -1;
         }
     }

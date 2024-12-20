@@ -194,6 +194,9 @@ static void intr_keyboard_handler(void) {
             if (ctrl_down_last && cur_char == 'u') {
                 cur_char -= 'a';    // 删除输入的快捷方式
             }
+            else if (ctrl_down_last && cur_char == 'l') {
+                cur_char -= 'a';    // 清空屏幕的快捷方式
+            }
             ioq_putchar(&kbd_buf, cur_char);
             return;
         }

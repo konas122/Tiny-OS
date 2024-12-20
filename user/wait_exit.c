@@ -1,5 +1,7 @@
 #include "fs.h"
 #include "list.h"
+#include "pipe.h"
+#include "file.h"
 #include "debug.h"
 #include "global.h"
 #include "thread.h"
@@ -52,7 +54,16 @@ static void release_prog_resource(task_struct *release_thread) {
     // 关闭进程打开的文件
     for (uint8_t fd_idx = 3; fd_idx < MAX_FILES_OPEN_PER_PROC; fd_idx++) {
         if (release_thread->fd_table[fd_idx] != -1) {
-            sys_close(fd_idx);
+            if (is_pipe(fd_idx)) {
+                uint32_t global_fd = fd_local2global(fd_idx);
+                if (--file_table[global_fd].fd_pos == 0) {
+                    mfree_page(PF_KERNEL, file_table[global_fd].fd_inode, 1);
+                    file_table[global_fd].fd_inode = NULL;
+                }
+            }
+            else {
+                sys_close(fd_idx);
+            }
         }
     }
 }

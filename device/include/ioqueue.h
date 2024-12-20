@@ -27,5 +27,6 @@ bool ioq_empty(ioqueue *ioq);
 char ioq_getchar(ioqueue *ioq);
 void ioq_putchar(ioqueue *ioq, char byte);
 
+uint32_t ioq_length(ioqueue *ioq);
 
 #endif

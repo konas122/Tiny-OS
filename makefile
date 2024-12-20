@@ -32,7 +32,7 @@ OBJS =	$(BUILD_DIR)/main.o $(BUILD_DIR)/print.o $(BUILD_DIR)/interrupt.o $(BUILD
 		$(BUILD_DIR)/syscall_init.o $(BUILD_DIR)/stdio.o $(BUILD_DIR)/stdio_kernel.o \
 		$(BUILD_DIR)/ide.o $(BUILD_DIR)/fs.o $(BUILD_DIR)/dir.o $(BUILD_DIR)/file.o $(BUILD_DIR)/inode.o \
 		$(BUILD_DIR)/fork.o $(BUILD_DIR)/shell.o $(BUILD_DIR)/cmd.o $(BUILD_DIR)/assert.o \
-		$(BUILD_DIR)/exec.o $(BUILD_DIR)/wait_exit.o
+		$(BUILD_DIR)/exec.o $(BUILD_DIR)/wait_exit.o $(BUILD_DIR)/pipe.o
 
 include defines.mk
 
@@ -174,6 +174,10 @@ $(BUILD_DIR)/shell.o: shell/shell.c
 	@$(CC) $(CFLAGS) $< -o $@
 	@echo "    CC   " $@
 
+$(BUILD_DIR)/pipe.o: shell/pipe.c
+	@$(CC) $(CFLAGS) $< -o $@
+	@echo "    CC   " $@
+
 
 # ================================================
 $(BUILD_DIR)/kernel.o: kernel/kernel.S
@@ -220,7 +224,7 @@ $(BUILD_LIB_DIR)/start.o: shell/command/start.S
 	@$(AS) $(ASFLAGS) $< -o $@
 	@echo "    AS   " $@
 
-$(BUILD_LIB_DIR)/clib.a: $(CLIB_OBJS)
+$(BUILD_LIB_DIR)/libc.a: $(CLIB_OBJS)
 	@$(AR) $(ARFLAGS) $@ $^
 	@echo "    AR   " $@
 	@echo
@@ -247,7 +251,7 @@ clean:
 
 build: $(BUILD_DIR)/mbr.bin $(BUILD_DIR)/loader.bin $(BUILD_DIR)/kernel.bin
 
-crt: $(BUILD_LIB_DIR)/clib.a
+crt: $(BUILD_LIB_DIR)/libc.a
 
 lib: mk_dir crt
 

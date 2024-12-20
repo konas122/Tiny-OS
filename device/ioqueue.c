@@ -81,3 +81,15 @@ void ioq_putchar(ioqueue *ioq, char byte) {
         wakeup(&ioq->consumer);
     }
 }
+
+
+uint32_t ioq_length(ioqueue *ioq) {
+    uint32_t len = 0;
+    if (ioq->head >= ioq->tail) {
+        len = ioq->head - ioq->tail;
+    }
+    else {
+        len = bufsize - (ioq->tail - ioq->head);     
+    }
+    return len;
+}
