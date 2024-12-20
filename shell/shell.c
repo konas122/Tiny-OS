@@ -146,6 +146,9 @@ static void cmd_execute(uint32_t argc, char **argv) {
     else if (!strcmp("rm", argv[0])) {
         buildin_rm(argc, argv);
     }
+    else if (!strcmp("cat", argv[0])) {
+        buildin_cat(argc, argv);
+    }
     // 如果是外部命令, 需要从磁盘上加载
     else {
         int32_t pid = fork();
@@ -164,9 +167,11 @@ static void cmd_execute(uint32_t argc, char **argv) {
             memset(&_stat, 0, sizeof(stat));
             if (file_stat(argv[0], &_stat) == -1) {
                 printf("my_shell: cannot access %s: No such file or directory\n", argv[0]);
+                exit(-1);
             }
             else if (_stat.st_filetype != FT_REGULAR) {
                 printf("my_shell: %s is not a regular file\n", argv[0]);
+                exit(-1);
             }
             else {
                 execv(argv[0], argv);

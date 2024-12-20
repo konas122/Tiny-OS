@@ -62,6 +62,7 @@ void init(void) {
         while(1) {
             child_pid = wait(&status);
             printf("I'm init, My pid is 1, I recieve a child, Its pid is %d, status is %d\n", child_pid, status);
+            pause();
         }
     }
     else {

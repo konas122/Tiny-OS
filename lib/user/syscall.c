@@ -202,3 +202,8 @@ void fd_redirect(uint32_t old_local_fd, uint32_t new_local_fd) {
 void help(void) {
     _syscall0(SYS_HELP);
 }
+
+
+void pause(void) {
+    _syscall0(SYS_PAUSE);
+}

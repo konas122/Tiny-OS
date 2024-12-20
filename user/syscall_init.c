@@ -14,10 +14,9 @@
 #include "syscall_init.h"
 
 
-#define syscall_nr 32
 typedef void *syscall;
 
-syscall syscall_table[syscall_nr];
+syscall syscall_table[SYSCALL_NUM];
 
 
 uint32_t sys_getpid(void) {
@@ -44,6 +43,11 @@ void sys_help(void) {
   shortcut key:\n\
       ctrl+l: clear screen\n\
       ctrl+u: clear input\n\n");
+}
+
+
+static void sys_pause(void) {
+    thread_block(TASK_WAITING);
 }
 
 
@@ -78,6 +82,7 @@ void syscall_init(void) {
     syscall_table[SYS_PIPE] = (void *)sys_pipe;
     syscall_table[SYS_FD_REDIRECT] = (void *)sys_fd_redirect;
     syscall_table[SYS_HELP] = (void *)sys_help;
+    syscall_table[SYS_PAUSE] = (void *)sys_pause;
 
     put_str("syscall_init done\n");
 }
