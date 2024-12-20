@@ -134,7 +134,11 @@ int32_t file_create(dir *parent_dir, char *filename, uint8_t flag) {
         return -1;
     }
 
+    task_struct *cur = running_thread();
+    uint32_t *cur_pagedir = cur->pgdir;
+    cur->pgdir = NULL;
     inode *new_file_inode = (inode *)sys_malloc(sizeof(inode));
+    cur->pgdir = cur_pagedir;
     if (new_file_inode == NULL) {
         printk("file_create: sys_malloc for inode failded\n");
         rollback_step = 1;

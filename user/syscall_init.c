@@ -46,8 +46,40 @@ void sys_help(void) {
 }
 
 
-static void sys_pause(void) {
+static inline void sys_pause(void) {
     thread_block(TASK_WAITING);
+}
+
+
+static inline int32_t sys_ldprog(char *filename, uint32_t file_size) {
+    // (12 + 128 * 4) * 512 = 140 * 512 = 71680 = 70K
+    if (file_size > 71680) {
+        return -1;
+    }
+
+    if (file_size == 0) {
+        file_size = 24576;   // 24K
+    }
+
+    uint32_t sec_cnt = DIV_ROUND_UP(file_size, 512);
+    disk *sda = &channels[0].devices[0];
+    void *prog_buf = sys_malloc(file_size);
+    ide_read(sda, 300, prog_buf, sec_cnt);
+
+    int32_t fd = sys_open(filename, O_CREAT | O_RDWR);
+    if (fd != -1) {
+        if (sys_write(fd, prog_buf, file_size) == -1) {
+            sys_free(prog_buf);
+            sys_close(fd);
+            printk("file write error!\n");
+            return -1;
+        }
+    }
+
+    sys_free(prog_buf);
+    sys_close(fd);
+
+    return 0;
 }
 
 
@@ -80,9 +112,10 @@ void syscall_init(void) {
     syscall_table[SYS_EXIT] = (void *)sys_exit;
     syscall_table[SYS_WAIT] = (void *)sys_wait;
     syscall_table[SYS_PIPE] = (void *)sys_pipe;
-    syscall_table[SYS_FD_REDIRECT] = (void *)sys_fd_redirect;
+    syscall_table[SYS_REDIRECT] = (void *)sys_redirect;
     syscall_table[SYS_HELP] = (void *)sys_help;
     syscall_table[SYS_PAUSE] = (void *)sys_pause;
+    syscall_table[SYS_LDPROG] = (void *)sys_ldprog;
 
     put_str("syscall_init done\n");
 }

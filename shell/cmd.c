@@ -332,3 +332,33 @@ int32_t buildin_cat(uint32_t argc, char** argv) {
 
     return 0;
 }
+
+
+int32_t buildin_ldprog(uint32_t argc, char **argv) {
+    if (argc > 3 || argc == 1) {
+        printf("ldprog: argument error\n");
+        return -1;
+    }
+
+    if (getcwd(final_path, MAX_PATH_LEN) == NULL) {
+        printf("ldprog: get current work directory failed.\n");
+        return -1;
+    }
+    if (strlen(final_path) >= (MAX_PATH_LEN - strlen(argv[1]) - 1)) {
+        printf("ldprog: the length of `abs path_name` is too long.\n");
+        return -1;
+    }
+
+    strcat(final_path, "/");
+    strcat(final_path, argv[1]);
+
+    if (argc == 2) {
+        return ldprog(final_path, 0);
+    }
+    else {
+        uint32_t num = atoi(argv[2]);
+        return ldprog(final_path, num);
+    }
+
+    return 0;
+}

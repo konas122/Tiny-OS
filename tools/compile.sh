@@ -17,7 +17,11 @@ if [[ $cwd = "tools" ]]; then
 fi
 
 src_name=prog_no_arg.c
-if [ -f $1 ]; then
+
+if [ -z $1 ]; then
+    src_name="$src_path/$src_name"
+    SRC=$src_name
+elif [ -f $1 ]; then
     src_name=$1
     SRC=$src_name
 elif [ -f "$1.c" ]; then

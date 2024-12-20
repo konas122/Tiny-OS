@@ -18,5 +18,6 @@ void buildin_ps(uint32_t argc, char** argv);
 void buildin_clear(uint32_t argc, char** argv);
 
 int32_t buildin_cat(uint32_t argc, char** argv);
+int32_t buildin_ldprog(uint32_t argc, char **argv);
 
 #endif

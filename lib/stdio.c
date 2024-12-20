@@ -28,6 +28,22 @@ static void itoa(uint32_t value, char** buf_ptr_addr, uint8_t base) {
 }
 
 
+uint32_t atoi(const char *str) {
+    uint32_t res = 0;
+    char *ptr = (char *)str;
+    while (*ptr != 0 && *ptr == '0') {
+        ptr++;
+    }
+
+    for (; *ptr != 0 && res <= UINT32_MAX; ptr++) {
+        res *= 10;
+        res += (*ptr - '0');
+    }
+
+    return res;
+}
+
+
 uint32_t vsprintf(char *str, const char *format, va_list ap) {
     char *arg_str;
     int32_t arg_int;

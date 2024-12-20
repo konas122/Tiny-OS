@@ -31,21 +31,6 @@ int main(void) {
 
     cls_screen();
 
-    uint32_t file_size = 21828; 
-    uint32_t sec_cnt = DIV_ROUND_UP(file_size, 512);
-    disk *sda = &channels[0].devices[0];
-    void *prog_buf = sys_malloc(file_size);
-    ide_read(sda, 300, prog_buf, sec_cnt);
-    int32_t fd = sys_open("/prog", O_CREAT | O_RDWR);
-    if (fd != -1) {
-        if (sys_write(fd, prog_buf, file_size) == -1) {
-            sys_close(fd);
-            printk("file write error!\n");
-            while(1);
-        }
-    }
-    sys_close(fd);
-
     process_execute(init, "init");
 
     while(1);

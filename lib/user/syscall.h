@@ -31,9 +31,10 @@ typedef enum SYSCALL_NR {
     SYS_EXIT,
     SYS_WAIT,
     SYS_PIPE,
-    SYS_FD_REDIRECT,
+    SYS_REDIRECT,
     SYS_HELP,
     SYS_PAUSE,
+    SYS_LDPROG,
 
     SYSCALL_NUM,
 } SYSCALL_NR;
@@ -83,7 +84,7 @@ int32_t pipe(int32_t pipefd[2]);
 void fd_redirect(uint32_t old_local_fd, uint32_t new_local_fd);
 
 void help(void);
-
 void pause(void);
+int32_t ldprog(char *filename, uint32_t file_size);
 
 #endif

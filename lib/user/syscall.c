@@ -195,7 +195,7 @@ int32_t pipe(int32_t pipefd[2]) {
 
 
 void fd_redirect(uint32_t old_local_fd, uint32_t new_local_fd) {
-    _syscall2(SYS_FD_REDIRECT, old_local_fd, new_local_fd);
+    _syscall2(SYS_REDIRECT, old_local_fd, new_local_fd);
 }
 
 
@@ -206,4 +206,8 @@ void help(void) {
 
 void pause(void) {
     _syscall0(SYS_PAUSE);
+}
+
+int32_t ldprog(char *filename, uint32_t file_size) {
+    return _syscall2(SYS_LDPROG, filename, file_size);
 }

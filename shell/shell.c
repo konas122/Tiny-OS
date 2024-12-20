@@ -149,6 +149,9 @@ static void cmd_execute(uint32_t argc, char **argv) {
     else if (!strcmp("cat", argv[0])) {
         buildin_cat(argc, argv);
     }
+    else if (!strcmp("ldprog", argv[0])) {
+        buildin_ldprog(argc, argv);
+    }
     // 如果是外部命令, 需要从磁盘上加载
     else {
         int32_t pid = fork();
